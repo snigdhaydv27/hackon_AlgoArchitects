@@ -212,17 +212,15 @@ export function Nav() {
                       🌿 Sustainability & Eco Impact
                     </Link>
                   </li>
-                  {user?.role !== "admin" && (
-                    <li>
-                      <Link
-                        href="/"
-                        onClick={() => setSidebarOpen(false)}
-                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                      >
-                        📦 Hyperlocal Locker Network
-                      </Link>
-                    </li>
-                  )}
+                  <li>
+                    <Link
+                      href="/"
+                      onClick={() => setSidebarOpen(false)}
+                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                    >
+                      📦 Hyperlocal Locker Network
+                    </Link>
+                  </li>
                 </ul>
               </div>
               )}

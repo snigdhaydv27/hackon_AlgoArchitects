@@ -10,7 +10,7 @@ import  { ChatBot } from "@/components/ChatBot";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ReLoop — Every return finds its next best owner",
+  title: "Amazon — Every return finds its next best owner",
   description:
     "AI-powered circular commerce. Grade, route, and re-home long-tail returns hyperlocally. Built for ₹200–₹800 products.",
 };

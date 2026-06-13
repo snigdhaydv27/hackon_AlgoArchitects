@@ -21,7 +21,7 @@ const TEASERS = [
 ];
 
 const QUICK_CHIPS = [
-  "What is ReLoop?",
+  "What is Amazon?",
   "How does AI grading work?",
   "Show me Neighbor First",
   "Explain the economics",
@@ -31,13 +31,13 @@ const KB: { test: RegExp; answer: string; chips?: string[] }[] = [
   {
     test: /(hello|hi|hey|namaste|hola)/i,
     answer:
-      "Hi! I'm Loopy 🤖 - ReLoop's circular companion. Every returned, unused, or outgrown product finds its next best owner here. Ask me anything.",
-    chips: ["What is ReLoop?", "How do I try the demo?", "Why circular?"],
+      "Hi! I'm Loopy 🤖 - Amazon's circular companion. Every returned, unused, or outgrown product finds its next best owner here. Ask me anything.",
+    chips: ["What is Amazon?", "How do I try the demo?", "Why circular?"],
   },
   {
-    test: /(what is|tell me about|introduce|explain|reloop)/i,
+    test: /(what is|tell me about|introduce|explain|reloop|amazon)/i,
     answer:
-      "ReLoop solves the long-tail return problem. ₹200-₹800 items where shipping costs more than the product. We use AI grading + smart routing + hyperlocal locker handoffs so every return finds its next best owner - instead of being liquidated for ₹0.",
+      "Amazon solves the long-tail return problem. ₹200-₹800 items where shipping costs more than the product. We use AI grading + smart routing + hyperlocal locker handoffs so every return finds its next best owner - instead of being liquidated for ₹0.",
     chips: ["AI grading?", "Neighbor First?", "Show economics"],
   },
   {
@@ -67,7 +67,7 @@ const KB: { test: RegExp; answer: string; chips?: string[] }[] = [
   {
     test: /(trust|health|card|verify|safe|fraud)/i,
     answer:
-      "Every listing gets a Product Health Card: AI summary, defect list with severity, ReLoop signature, fixed price, locker pickup. No haggling. No strangers. No doorstep visits.",
+      "Every listing gets a Product Health Card: AI summary, defect list with severity, Amazon signature, fixed price, locker pickup. No haggling. No strangers. No doorstep visits.",
     chips: ["Show me", "Pricing?"],
   },
   {
@@ -80,7 +80,7 @@ const KB: { test: RegExp; answer: string; chips?: string[] }[] = [
     test: /(demo|try|how do i|where do i|test)/i,
     answer:
       "Easiest path: click Login -> pick Priya -> upload any product photo -> watch AI grade + smart route -> see the locker QR. The whole loop in 90 seconds.",
-    chips: ["What is ReLoop?", "Personas?"],
+    chips: ["What is Amazon?", "Personas?"],
   },
   {
     test: /(persona|priya|rahul|seller|buyer)/i,
@@ -333,7 +333,7 @@ export function ChatBot() {
     {
       id: "boot",
       role: "bot",
-      text: "Hi! I'm Loopy 🤖 - ReLoop's circular companion. Ask me anything about how returns find their next best owner.",
+      text: "Hi! I'm Loopy 🤖 - Amazon's circular companion. Ask me anything about how returns find their next best owner.",
       chips: QUICK_CHIPS,
     },
   ]);

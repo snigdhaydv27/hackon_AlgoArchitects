@@ -51,7 +51,7 @@ export default function Shop() {
         <div>
           <h1 className="text-3xl font-bold">Shop new (with prevention)</h1>
           <p className="text-slate-600">
-            New product purchase flow with ReLoop&apos;s pre-purchase AI warning. Try Sparx Running Shoes — the prevention layer triggers there.
+            New product purchase flow with Amazon&apos;s pre-purchase AI warning. Try Sparx Running Shoes — the prevention layer triggers there.
           </p>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((p) => (

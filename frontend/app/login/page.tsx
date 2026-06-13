@@ -186,7 +186,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <h1 className="text-3xl font-bold text-center">
-        {mode === "signin" ? "Sign in to ReLoop" : mode === "signup" ? "Create your account" : mode === "forgot" ? "Forgot password" : mode === "reset" ? "Reset password" : "Verify your email"}
+        {mode === "signin" ? "Sign in to Amazon" : mode === "signup" ? "Create your account" : mode === "forgot" ? "Forgot password" : mode === "reset" ? "Reset password" : "Verify your email"}
       </h1>
       <p className="text-slate-600 text-center mt-2">
         {mode === "signin"

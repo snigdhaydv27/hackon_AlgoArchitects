@@ -43,19 +43,19 @@ const PERSONAS = [
     name: "Priya",
     role: "Frustrated Buyer",
     problem: "Returned ₹500 shoes. A 600km warehouse trip costs more than the item itself. Result: liquidation.",
-    solution: "With ReLoop: Found a buyer 8km away. Re-homed in 2 hours."
+    solution: "With Amazon: Found a buyer 8km away. Re-homed in 2 hours."
   },
   {
     name: "Rahul",
     role: "Busy Parent",
     problem: "Working baby monitor sitting in a drawer. Doesn't want the hassle of online classifieds.",
-    solution: "With ReLoop: 50 nearby parents notified instantly. Secure locker handoff."
+    solution: "With Amazon: 50 nearby parents notified instantly. Secure locker handoff."
   },
   {
     name: "Small Seller",
     role: "Drowning in Returns",
     problem: "200 returns/month marked 'didn't match'. Relying on manual inspection and guesswork.",
-    solution: "With ReLoop: AI grades & auto-routes the entire batch in seconds."
+    solution: "With Amazon: AI grades & auto-routes the entire batch in seconds."
   },
 ];
 
@@ -73,7 +73,7 @@ export default function Home() {
           
           <p className="max-w-3xl text-lg text-[#565959] mb-8">
             The system works for premium goods. For the long tail — ₹200 to ₹800 — it breaks. <br/>
-            <span className="font-bold text-[#0F1111]">ReLoop fixes this with AI grading, smart routing, and hyperlocal locker networks.</span>
+            <span className="font-bold text-[#0F1111]">Amazon fixes this with AI grading, smart routing, and hyperlocal locker networks.</span>
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -126,7 +126,7 @@ export default function Home() {
         {/* The 5 Pillars Section */}
         <div className="mb-6 bg-white p-6 rounded-md border border-[#D5D9D9] shadow-sm">
           <div className="mb-6 border-b border-[#D5D9D9] pb-4">
-            <h2 className="text-2xl font-bold text-[#0F1111]">The Five Pillars of ReLoop</h2>
+            <h2 className="text-2xl font-bold text-[#0F1111]">The Five Pillars of Amazon</h2>
             <p className="text-sm text-[#565959] mt-1">Each pillar removes a critical bottleneck from the broken long-tail return loop.</p>
           </div>
           
@@ -156,7 +156,7 @@ export default function Home() {
           
           <div className="p-8 md:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-[#D5D9D9]">
             <Stat label="Liquidation Today" value="₹0" caption="100% loss on long-tail returns" tone="bad" />
-            <Stat label="ReLoop Recovery" value="₹350+" caption="Net value reclaimed per return" tone="good" />
+            <Stat label="Amazon Recovery" value="₹350+" caption="Net value reclaimed per return" tone="good" />
             <Stat label="Logistics Saved" value="100%" caption="Skips warehouse completely" tone="good" />
           </div>
         </div>

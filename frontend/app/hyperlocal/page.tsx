@@ -93,7 +93,7 @@ export default function HyperlocalPage() {
         <div className="mx-auto max-w-3xl bg-white border border-[#D5D9D9] rounded p-8 text-center shadow-sm">
            <h2 className="text-2xl font-bold text-[#0F1111] mb-4">Ready to give products a second chance?</h2>
            <p className="text-[#565959] mb-8">
-             Join the ReLoop network today. Whether you're returning an item or looking for a certified deal nearby, the intelligent bridge is here.
+             Join the Amazon network today. Whether you're returning an item or looking for a certified deal nearby, the intelligent bridge is here.
            </p>
            <Link href="/login" className="bg-transparent text-[#007185] border border-[#D5D9D9] hover:bg-[#F3F3F3] rounded px-8 py-2 font-semibold transition-colors inline-block">
              Sign in to get started

@@ -53,7 +53,7 @@ export function RazorpayButton({ listingId, amountInr, buyerName, buyerEmail, on
         amount: order.amount,
         currency: order.currency,
         order_id: order.id,
-        name: "ReLoop",
+        name: "Amazon",
         description: "Verified used item",
         prefill: { name: buyerName, email: buyerEmail ?? "" },
         theme: { color: "#1eb877" },

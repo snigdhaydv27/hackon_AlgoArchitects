@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { Recycle, LogOut, Search, MapPin, ChevronDown, User, X } from "lucide-react";
+import { LogOut, Search, MapPin, ChevronDown, User, X } from "lucide-react";
+import { AmazonLogo } from "./AmazonLogo";
 import { BuyerInbox } from "./BuyerInbox";
 import { BarChart3, Map, ShoppingBag, Package, Leaf } from "lucide-react";
 
@@ -21,13 +22,8 @@ export function Nav() {
         {/* Top Header Bar (Level 1) */}
         <div className="mx-auto max-w-7xl flex h-14 items-center justify-between px-4 gap-4">
           {/* Logo */}
-          <Link href="/" className="flex flex-col items-start select-none mr-2 group p-1 border border-transparent hover:border-white rounded transition-all">
-            <div className="flex items-center gap-1.5 font-black text-xl tracking-tight text-white leading-none">
-              <span>ReLoop</span>
-              <Recycle className="size-4 text-[#ff9900]" />
-            </div>
-            {/* Orange Smile Curve Under Logo */}
-            <div className="w-16 h-1 bg-[#ff9900] rounded-b-md transform translate-x-2 -mt-0.5" style={{ borderRadius: '0 0 100% 100%' }}></div>
+          <Link href="/" className="flex items-center select-none mr-2 group p-1 border border-transparent hover:border-white rounded transition-all">
+            <AmazonLogo textClassName="text-2xl text-white" />
           </Link>
 
           {/* Deliver To Pin Widget */}
@@ -49,7 +45,7 @@ export function Nav() {
             </select>
             <input
               type="text"
-              placeholder="Search ReLoop circular products..."
+              placeholder="Search Amazon circular products..."
               className="flex-grow px-3 text-slate-800 text-sm h-full outline-none"
             />
             <button className="bg-[#febd69] hover:bg-[#f3a847] text-[#111] px-5 h-full flex items-center justify-center transition-colors cursor-pointer">
@@ -189,7 +185,7 @@ export function Nav() {
               {user?.role !== "admin" && (
               <div>
                 <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 font-mono">
-                  Reloop Departments
+                  Amazon Departments
                 </h4>
                 <ul className="space-y-3.5 text-xs text-slate-600 font-medium">
                   {user?.role === "buyer" && (
@@ -321,7 +317,7 @@ export function Nav() {
                         }}
                         className="w-full text-left text-rose-600 hover:text-rose-700 font-bold flex items-center gap-2 hover:bg-slate-50 p-1 rounded cursor-pointer bg-transparent border-none outline-none"
                       >
-                        🚪 Sign Out of ReLoop
+                        🚪 Sign Out of Amazon
                       </button>
                     </li>
                   )}

@@ -138,7 +138,7 @@ export default function Admin() {
     <div className="mx-auto max-w-7xl px-4 py-10">
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">ReLoop Operations</h1>
+          <h1 className="text-3xl font-bold">Amazon Operations</h1>
           <p className="text-slate-600">
             Real-time picture of recovery economics, route distribution, and Neighbor First impact.
           </p>

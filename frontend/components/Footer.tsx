@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Recycle } from "lucide-react";
+import { AmazonLogo } from "./AmazonLogo";
 
 export function Footer() {
   const handleScrollToTop = () => {
@@ -24,10 +24,10 @@ export function Footer() {
           <div>
             <h4 className="text-white font-bold text-sm mb-4">Get to Know Us</h4>
             <ul className="space-y-2.5 text-xs text-[#ddd] hover:underline-child">
-              <li><Link href="/" className="hover:underline">About ReLoop</Link></li>
+              <li><Link href="/" className="hover:underline">About Amazon</Link></li>
               <li><Link href="/" className="hover:underline">Sustainability Impact</Link></li>
               <li><Link href="/" className="hover:underline">Green Technologies</Link></li>
-              <li><Link href="/" className="hover:underline">ReLoop Devices</Link></li>
+              <li><Link href="/" className="hover:underline">Amazon Devices</Link></li>
             </ul>
           </div>
           <div>
@@ -45,7 +45,7 @@ export function Footer() {
               <li><Link href="/seller/return/new" className="hover:underline">Sell Refurbished Items</Link></li>
               <li><Link href="/" className="hover:underline">Become a Locker Partner</Link></li>
               <li><Link href="/" className="hover:underline">Advertise Your Products</Link></li>
-              <li><Link href="/" className="hover:underline">ReLoop Cash/Credits program</Link></li>
+              <li><Link href="/" className="hover:underline">Amazon Cash/Credits program</Link></li>
             </ul>
           </div>
           <div>
@@ -62,8 +62,7 @@ export function Footer() {
         {/* Global Selectors Row */}
         <div className="mx-auto max-w-5xl flex flex-wrap items-center justify-center gap-6 pt-10 mt-10 border-t border-[#37475a] text-xs">
           <Link href="/" className="flex items-center gap-2 text-white font-bold mr-4">
-            <Recycle className="size-5 text-[#ff9900]" />
-            <span className="text-sm">ReLoop</span>
+            <AmazonLogo textClassName="text-xl text-white" />
           </Link>
           <div className="border border-slate-500 rounded px-3 py-1 bg-[#232f3e] text-slate-300 flex items-center gap-1.5 cursor-pointer hover:border-slate-300">
             <span>🌐</span> English
@@ -81,10 +80,10 @@ export function Footer() {
           <Link href="/" className="hover:underline">Privacy Notice</Link>
           <Link href="/" className="hover:underline">Interest-Based Ads</Link>
           <span className="text-slate-600">|</span>
-          <span>© 2026-2027 ReLoop.inc or its affiliates. All rights reserved.</span>
+          <span>© 2026-2027 Amazon.com, Inc. or its affiliates. All rights reserved.</span>
         </div>
         <p className="max-w-2xl mx-auto text-[10px] text-slate-500 leading-normal">
-          ReLoop is a carbon-neutral shopping service. Standard logistics parameters are processed under deep verification models in compliance with circular economy guidelines.
+          Amazon is a carbon-neutral shopping service. Standard logistics parameters are processed under deep verification models in compliance with circular economy guidelines.
         </p>
       </div>
     </footer>

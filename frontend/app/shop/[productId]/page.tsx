@@ -109,7 +109,7 @@ export default function ProductPage() {
             </div>
             {user?.profile?.footLengthMm && (
               <div className="mt-3 text-xs text-slate-500">
-                Your foot profile: {user.profile.footLengthMm}mm — ReLoop auto-checks this against return data.
+                Your foot profile: {user.profile.footLengthMm}mm — Amazon auto-checks this against return data.
               </div>
             )}
           </div>
@@ -123,7 +123,7 @@ export default function ProductPage() {
           <div className="mt-6 card p-5 border-amber-300 bg-amber-50">
             <div className="flex items-center gap-2 text-amber-700 font-semibold">
               <AlertTriangle className="size-5" />
-              ReLoop Prevention Alert (auto-fired)
+              Amazon Prevention Alert (auto-fired)
             </div>
             <p className="mt-3 text-sm text-amber-800">{warning.message}</p>
             <div className="mt-3 text-xs text-amber-700">

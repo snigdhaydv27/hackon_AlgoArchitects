@@ -106,7 +106,7 @@ export default function Reserve() {
           <div className="text-xs uppercase text-slate-500">Listing status</div>
           <div className="text-2xl font-bold text-slate-900">{status}</div>
           <p className="text-sm text-slate-600 mt-1">
-            ReLoop holds your payment until pickup is confirmed at the locker.
+            Amazon holds your payment until pickup is confirmed at the locker.
           </p>
           {error && (
             <div className="mt-3 rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">
@@ -179,7 +179,7 @@ export default function Reserve() {
               Pickup complete
             </div>
             <p className="text-sm text-emerald-700 mt-1">
-              Seller has been refunded fully. ReLoop recovered ₹{listing.priceFinal} that would
+              Seller has been refunded fully. Amazon recovered ₹{listing.priceFinal} that would
               have been ₹0 in the old liquidation flow.
             </p>
             <button onClick={() => router.push("/buyer/nearby")} className="btn-secondary mt-4 text-sm">

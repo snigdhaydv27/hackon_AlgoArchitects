@@ -13,6 +13,7 @@ import { buildHealthCard } from "../services/healthCard.js";
 import { notifyNearbyBuyers } from "../services/notify.js";
 import { pickFinalPrice } from "../utils/pricing.js";
 import { generatePickupCode, makeQrDataUrl } from "../utils/qrcode.js";
+import { awardCredits } from "../services/greenCredits.js";
 
 const router = Router();
 
@@ -50,11 +51,9 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  );
  const allUrls = allStored.map((s) => s.url);
 
- // Send ALL images to AI for multi-angle analysis
  const grader = getGrader();
- const allImageInputs = allStored.map((s) => ({ mime: s.mime, base64: s.base64 }));
  const grading = await grader.grade(
- allImageInputs,
+ [{ mime: stored.mime, base64: stored.base64 }],
  {
  title: product.title,
  category: product.category,
@@ -67,7 +66,7 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  const finalPrice = pickFinalPrice(grading.suggestedPriceMin, grading.suggestedPriceMax);
  const neighbor = await findNeighborMatches(sellerCoords, product.category);
  const hasLocalBuyers =
- neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
+ finalPrice <= 800 && neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
 
  const decision = decideRoute({
  grade: grading.grade,
@@ -150,6 +149,13 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  // Always issue full refund to seller (per spec, seller never penalized)
  ret.sellerRefundIssued = true;
  await ret.save();
+
+ // Reward the seller for keeping the item out of landfill (non-blocking).
+ if (decision.route === "DONATE") {
+ await awardCredits(seller._id, "DONATION", { returnId: ret._id });
+ } else if (decision.route !== "RECYCLE") {
+ await awardCredits(seller._id, "RETURN_DIVERTED", { returnId: ret._id });
+ }
 
  res.json({
  return: ret.toObject(),

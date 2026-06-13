@@ -365,6 +365,7 @@ function serializeUser(u: Record<string, unknown> & { _id: unknown }) {
     location: u.location,
     profile: u.profile,
     interests: u.interests,
+    greenCredits: u.greenCredits ?? 0,
   };
 }
 

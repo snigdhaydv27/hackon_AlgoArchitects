@@ -131,10 +131,18 @@ export default function ProductPage() {
             </div>
             {warning.recommendedVariant && (
               <button
-                onClick={() => setSize(warning.recommendedVariant!)}
+                onClick={() => {
+                  const rec = warning.recommendedVariant!;
+                  // Reward avoiding a likely return before it happens (non-blocking).
+                  api("/prevention/accept", {
+                    method: "POST",
+                    body: JSON.stringify({ productId: product._id }),
+                  }).catch(() => {});
+                  setSize(rec);
+                }}
                 className="btn-primary mt-4 text-sm"
               >
-                Switch to Size {warning.recommendedVariant}
+                Switch to Size {warning.recommendedVariant} & earn green credits
               </button>
             )}
             <div className="mt-4 text-xs text-slate-600 border-t border-amber-200 pt-3">

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { Recycle, LogOut, Search, MapPin, ChevronDown, User, X } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
-import { BarChart3, Map, ShoppingBag, Package } from "lucide-react";
+import { BarChart3, Map, ShoppingBag, Package, Leaf } from "lucide-react";
 
 export function Nav() {
   const { user, logout } = useAuth();
@@ -345,10 +345,12 @@ function navLinks(role?: string) {
     return [
       { href: "/buyer/nearby", label: "Nearby", icon: Map },
       { href: "/shop", label: "Shop", icon: ShoppingBag },
+      { href: "/credits", label: "Green Credits", icon: Leaf },
     ];
   }
   return [
     { href: "/seller/return/new", label: "New Return", icon: Package },
     { href: "/seller/dashboard", label: "My Returns", icon: BarChart3 },
+    { href: "/credits", label: "Green Credits", icon: Leaf },
   ];
 }

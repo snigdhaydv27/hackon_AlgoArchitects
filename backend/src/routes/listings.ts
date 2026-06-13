@@ -5,21 +5,11 @@ import { UserModel } from "../models/User.js";
 import { requireAuth } from "../middleware/mockAuth.js";
 import { listNearbyListings } from "../services/neighbor.js";
 import { buildHealthCard } from "../services/healthCard.js";
-import { getRecommendations } from "../services/recommendations.js";
 import { GradingResult } from "../services/ai/types.js";
+import { awardCredits } from "../services/greenCredits.js";
+import { getRecommendations } from "../services/recommendations.js";
 
 const router = Router();
-
-// Personalized recommendations for the logged-in buyer
-router.get("/recommended", requireAuth, async (req, res) => {
-  const me = await UserModel.findById(req.user!.id).lean();
-  if (!me) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-  const recommendations = await getRecommendations(me);
-  res.json(recommendations);
-});
 
 router.get("/nearby", requireAuth, async (req, res) => {
  const me = await UserModel.findById(req.user!.id).lean();
@@ -29,6 +19,16 @@ router.get("/nearby", requireAuth, async (req, res) => {
  }
  const coords = me.location!.coordinates as [number, number];
  const items = await listNearbyListings(coords, 25);
+ res.json(items);
+});
+
+router.get("/recommended", requireAuth, async (req, res) => {
+ const me = await UserModel.findById(req.user!.id).lean();
+ if (!me) {
+ res.status(404).json({ error: "User not found" });
+ return;
+ }
+ const items = await getRecommendations(me);
  res.json(items);
 });
 
@@ -121,6 +121,12 @@ router.post("/:id/pickup", requireAuth, async (req, res) => {
  l.status = "COMPLETE";
  await l.save();
  await ReturnModel.findByIdAndUpdate(l.returnId, { status: "COMPLETE" });
+
+ // Reward the buyer for a zero-logistics local pickup (non-blocking).
+ if (l.buyerId) {
+ await awardCredits(l.buyerId, "LOCAL_PICKUP", { listingId: l._id, returnId: l.returnId });
+ }
+
  res.json(l.toObject());
 });
 

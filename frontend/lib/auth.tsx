@@ -12,6 +12,7 @@ export interface AuthUser {
   location?: { type: "Point"; coordinates: [number, number] };
   profile?: { footLengthMm?: number; preferredSize?: string; brand?: string };
   interests?: string[];
+  greenCredits?: number;
 }
 
 interface AuthCtx {

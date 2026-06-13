@@ -347,11 +347,12 @@ async function seedPreventionStats(products: Array<{ _id: mongoose.Types.ObjectI
 async function seedDemoActivity(opts: {
  buyers: Array<{ _id: mongoose.Types.ObjectId }>;
  lockers: Array<{ _id: mongoose.Types.ObjectId; location: { coordinates: number[] } }>;
- products: Array<{ _id: mongoose.Types.ObjectId; title: string; originalPrice: number; category: string }>;
+ products: Array<{ _id: mongoose.Types.ObjectId; title: string; originalPrice: number; category: string; images?: string[] }>;
+ sellers: Array<{ _id: mongoose.Types.ObjectId; location: { coordinates: number[] } }>;
  small: { _id: mongoose.Types.ObjectId; location: { coordinates: number[] } };
 }) {
  // Pre-populate some prior returns so admin dashboard is non-empty.
- const r1 = await ReturnModel.create({
+ await ReturnModel.create({
  productId: opts.products[2]._id,
  sellerId: opts.small._id,
  images: ["/products/kurta.jpg"],
@@ -426,6 +427,159 @@ async function seedDemoActivity(opts: {
  refundAmount: 799,
  sellerRefundIssued: true,
  });
+
+ // ===================================================================
+ // LIVE LISTINGS — these power the personalized recommendations engine
+ // ===================================================================
+ const { generatePickupCode, makeQrDataUrl } = await import("../utils/qrcode.js");
+
+ const demoListings = [
+  // Footwear — Grade A (appeals to Neha, Meera, Aditya)
+  {
+   product: opts.products[0], // Sparx Running Shoes
+   seller: opts.sellers[0],
+   locker: opts.lockers[0], // Koramangala
+   grade: "A" as const,
+   priceFinal: 420,
+   summary: "Like-new running shoes. Worn once indoors, sole immaculate.",
+   defects: [],
+  },
+  // Footwear — Grade B (Kids sandals)
+  {
+   product: opts.products[4], // Kids Trekking Sandals
+   seller: opts.sellers[1],
+   locker: opts.lockers[1], // HSR
+   grade: "B" as const,
+   priceFinal: 349,
+   summary: "Lightly used kids sandals. Minor scuff on toe. Perfect for outdoor play.",
+   defects: ["Small scuff on toe cap"],
+  },
+  // Baby — Grade A (appeals to Karthik, Divya)
+  {
+   product: opts.products[1], // Philips Baby Monitor
+   seller: opts.sellers[0],
+   locker: opts.lockers[3], // Jayanagar
+   grade: "A" as const,
+   priceFinal: 3200,
+   summary: "Unused baby monitor, original packaging. Gift duplicate — never powered on.",
+   defects: [],
+  },
+  // Apparel — Grade B (appeals to Meera, Pooja, Aditya)
+  {
+   product: opts.products[2], // Cotton Kurta Set
+   seller: opts.small,
+   locker: opts.lockers[2], // Indiranagar
+   grade: "B" as const,
+   priceFinal: 499,
+   summary: "Beautiful hand-block print kurta. Worn twice, washed once. Like new.",
+   defects: ["Faint fold crease from storage"],
+  },
+  // Home — Grade A (appeals to Neha, Arjun, Ravi, Aditya)
+  {
+   product: opts.products[3], // Steel Water Bottle
+   seller: opts.small,
+   locker: opts.lockers[5], // Marathahalli
+   grade: "A" as const,
+   priceFinal: 320,
+   summary: "Brand new Milton bottle. Unused — got two as gifts.",
+   defects: [],
+  },
+  // Electronics — Grade B (appeals to Arjun, Ravi, Karthik)
+  {
+   product: opts.products[5], // Bluetooth Earbuds
+   seller: opts.sellers[1],
+   locker: opts.lockers[4], // Whitefield
+   grade: "B" as const,
+   priceFinal: 520,
+   summary: "Boat earbuds in great condition. Charging case has minor scratch. Sound perfect.",
+   defects: ["Light scratch on charging case lid"],
+  },
+  // Apparel — Grade A (appeals to Meera, Pooja)
+  {
+   product: opts.products[2], // Cotton Kurta
+   seller: opts.sellers[0],
+   locker: opts.lockers[6], // BTM
+   grade: "A" as const,
+   priceFinal: 580,
+   summary: "Unworn kurta with tags intact. Ordered wrong size, never returned in time.",
+   defects: [],
+  },
+  // Electronics — Grade A (appeals to Arjun, Ravi)
+  {
+   product: opts.products[5], // Earbuds
+   seller: opts.small,
+   locker: opts.lockers[7], // Banashankari
+   grade: "A" as const,
+   priceFinal: 599,
+   summary: "Sealed Boat Airdopes. Opened box to check contents, never used.",
+   defects: [],
+  },
+  // Footwear — Grade B (appeals to Neha, Meera, Aditya)
+  {
+   product: opts.products[0], // Sparx shoes
+   seller: opts.sellers[1],
+   locker: opts.lockers[1], // HSR
+   grade: "B" as const,
+   priceFinal: 380,
+   summary: "Good condition Sparx shoes. Used for 2 weeks. Clean sole, slight crease on toe.",
+   defects: ["Slight crease on toe box", "Minor sole wear"],
+  },
+  // Home — Grade B (appeals to Neha, Arjun, Aditya)
+  {
+   product: opts.products[3], // Water bottle
+   seller: opts.sellers[0],
+   locker: opts.lockers[0], // Koramangala
+   grade: "B" as const,
+   priceFinal: 280,
+   summary: "Used water bottle, minor dent near base. Insulation works perfectly.",
+   defects: ["Small dent on base"],
+  },
+ ];
+
+ for (const item of demoListings) {
+  const code = generatePickupCode();
+  const qr = await makeQrDataUrl(JSON.stringify({ code, listingDemo: true }));
+  const lockerCoords = item.locker.location.coordinates as [number, number];
+
+  const ret = await ReturnModel.create({
+   productId: item.product._id,
+   sellerId: item.seller._id,
+   images: item.product.images || ["/products/placeholder.jpg"],
+   aiGrade: item.grade,
+   aiSummary: item.summary,
+   defects: item.defects,
+   confidence: item.grade === "A" ? 0.95 : 0.87,
+   priceBand: { min: item.priceFinal - 50, max: item.priceFinal + 80 },
+   route: "NEIGHBOR_FIRST",
+   routeReason: "Local buyers found within 8km",
+   estimatedRecovery: item.priceFinal,
+   logisticsCost: 0,
+   sellerLocation: item.seller.location,
+   status: "LISTED",
+   refundAmount: item.product.originalPrice,
+   sellerRefundIssued: true,
+  });
+
+  await ListingModel.create({
+   returnId: ret._id,
+   productId: item.product._id,
+   sellerId: item.seller._id,
+   lockerId: item.locker._id,
+   priceFinal: item.priceFinal,
+   title: item.product.title,
+   grade: item.grade,
+   images: item.product.images || ["/products/placeholder.jpg"],
+   summary: item.summary,
+   defects: item.defects,
+   location: { type: "Point", coordinates: lockerCoords },
+   status: "LIVE",
+   pickupCode: code,
+   qrDataUrl: qr,
+   expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 2 weeks
+  });
+ }
+
+ console.log(`[seed] created ${demoListings.length} LIVE listings for recommendations`);
 }
 
 async function main() {
@@ -446,9 +600,10 @@ async function main() {
  await seedPreventionStats(products);
 
  const small = users.find((u) => u.role === "small_seller")!;
+ const sellers = users.filter((u) => u.role === "seller" || u.role === "small_seller");
  const buyers = users.filter((u) => u.role === "buyer");
 
- console.log("[seed] seeding prior demo activity...");
+ console.log("[seed] seeding demo activity + LIVE listings...");
  await seedDemoActivity({
  buyers: buyers.map((b) => ({ _id: b._id })),
  lockers: lockers.map((l) => ({ _id: l._id, location: l.location })),
@@ -457,7 +612,9 @@ async function main() {
  title: p.title,
  originalPrice: p.originalPrice,
  category: p.category,
+ images: p.images,
  })),
+ sellers: sellers.map((s) => ({ _id: s._id, location: s.location! })),
  small: { _id: small._id, location: small.location! },
  });
 

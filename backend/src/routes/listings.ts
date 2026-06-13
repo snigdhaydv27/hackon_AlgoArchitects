@@ -5,9 +5,21 @@ import { UserModel } from "../models/User.js";
 import { requireAuth } from "../middleware/mockAuth.js";
 import { listNearbyListings } from "../services/neighbor.js";
 import { buildHealthCard } from "../services/healthCard.js";
+import { getRecommendations } from "../services/recommendations.js";
 import { GradingResult } from "../services/ai/types.js";
 
 const router = Router();
+
+// Personalized recommendations for the logged-in buyer
+router.get("/recommended", requireAuth, async (req, res) => {
+  const me = await UserModel.findById(req.user!.id).lean();
+  if (!me) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  const recommendations = await getRecommendations(me);
+  res.json(recommendations);
+});
 
 router.get("/nearby", requireAuth, async (req, res) => {
  const me = await UserModel.findById(req.user!.id).lean();

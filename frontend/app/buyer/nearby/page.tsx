@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import { LocationSetter } from "@/components/LocationSetter";
+import { RecommendedListings } from "@/components/RecommendedListings";
 import { MapPin, ShieldCheck } from "lucide-react";
 
 interface Listing {
@@ -45,6 +46,13 @@ export default function NearbyListings() {
  return (
  <RoleGuard allowed={["buyer", "admin"]}>
  <div className="mx-auto max-w-6xl px-4 py-10">
+
+ {/* Personalized Recommendations */}
+ <section className="mb-10">
+ <RecommendedListings />
+ </section>
+
+ <div className="border-t border-slate-200 pt-8">
  <div className="flex items-center gap-2 text-sm text-slate-500">
  <MapPin className="size-4" />
  Showing listings within 25 km of {user.address}
@@ -100,6 +108,7 @@ export default function NearbyListings() {
  </div>
  </Link>
  ))}
+ </div>
  </div>
  </div>
  </RoleGuard>

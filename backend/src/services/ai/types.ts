@@ -5,6 +5,11 @@ export interface GradingContext {
  title: string;
 }
 
+export interface ImageInput {
+ mime: string;
+ base64: string;
+}
+
 export interface GradingResult {
  grade: "A" | "B" | "C" | "D";
  defects: string[];
@@ -18,6 +23,5 @@ export interface GradingResult {
 
 export interface GradingProvider {
  name: "anthropic" | "bedrock" | "mock";
- grade(image: { mime: string; base64: string }, ctx: GradingContext): Promise<GradingResult>;
+ grade(images: ImageInput[], ctx: GradingContext): Promise<GradingResult>;
 }
-

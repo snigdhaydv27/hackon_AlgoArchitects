@@ -4,53 +4,78 @@
 
 :root {
   color-scheme: light;
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #e2e8f0;
 }
 html, body {
-  background: #eaeded;
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
   color: #0f1111;
-  font-family: "Segoe UI", Arial, sans-serif;
+  scroll-behavior: smooth;
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm transition-all shadow-sm rounded-md border font-normal cursor-pointer select-none;
+    @apply inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm transition-all shadow-sm rounded-lg border font-medium cursor-pointer select-none active:scale-95;
   }
   .btn-primary {
-    @apply btn bg-[#ffd814] text-[#0f1111] border-[#fcd200] hover:bg-[#f7ca00] active:bg-[#f0b800];
+    @apply btn bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-transparent hover:from-emerald-400 hover:to-emerald-500 shadow-md shadow-emerald-500/20;
   }
   .btn-secondary {
-    @apply btn bg-white text-[#0f1111] border-[#d5d9d9] hover:bg-[#f7fafa] active:bg-[#f0f2f2];
+    @apply btn bg-white/80 backdrop-blur-md text-slate-800 border-slate-200/50 hover:bg-white/90 hover:shadow-sm;
   }
   .btn-ghost {
     @apply btn bg-transparent text-slate-700 border-transparent hover:bg-slate-100 shadow-none;
   }
   .card {
-    @apply bg-white border border-[#d5d9d9] rounded-md shadow-sm p-6;
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm p-6;
+  }
+  .glass-card {
+    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl shadow-slate-200/50 rounded-2xl;
   }
   .pill {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold tracking-wide;
   }
   .gradient-bg {
-    background: linear-gradient(to bottom, #eaeded 0%, #eaeded 100%);
+    background: radial-gradient(circle at top right, rgba(16,185,129,0.1) 0%, transparent 40%),
+                radial-gradient(circle at bottom left, rgba(59,130,246,0.05) 0%, transparent 40%);
   }
   .link-teal {
-    @apply text-[#007185] hover:text-[#c45500] hover:underline cursor-pointer;
+    @apply text-emerald-600 hover:text-emerald-500 hover:underline cursor-pointer transition-colors;
   }
 }
 
 @keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-in-left {
-  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+
 .backdrop-blur-xxs {
-  backdrop-filter: blur(1px);
+  backdrop-filter: blur(2px);
 }

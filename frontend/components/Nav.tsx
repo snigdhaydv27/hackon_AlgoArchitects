@@ -205,7 +205,7 @@ export function Nav() {
                   )}
                   <li>
                     <Link
-                      href="/"
+                      href="/sustainability"
                       onClick={() => setSidebarOpen(false)}
                       className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
                     >
@@ -214,7 +214,7 @@ export function Nav() {
                   </li>
                   <li>
                     <Link
-                      href="/"
+                      href="/hyperlocal"
                       onClick={() => setSidebarOpen(false)}
                       className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
                     >

@@ -42,6 +42,7 @@ interface GradeResp {
     estimatedRecovery: number;
     logisticsCost: number;
     netRecovery: number;
+    platformLoss: number;
   };
   neighbor: {
     buyersNearby: Array<{ _id: string; name: string; distanceKm: number; interests: string[] }>;
@@ -287,6 +288,7 @@ function Result({ data, preview }: { data: GradeResp; preview: string | null }) 
         estimatedRecovery={decision.estimatedRecovery}
         logisticsCost={decision.logisticsCost}
         netRecovery={decision.netRecovery}
+        platformLoss={decision.platformLoss}
       />
 
       {decision.route === "NEIGHBOR_FIRST" && neighbor.nearestLocker && (

@@ -16,10 +16,10 @@ export class MockGrader implements GradingProvider {
  const grade = grades[hash % grades.length];
 
  const bands: Record<typeof grade, [number, number]> = {
- A: [0.7, 0.85],
- B: [0.5, 0.7],
- C: [0.3, 0.5],
- D: [0.1, 0.25],
+ A: [0.85, 0.95],
+ B: [0.6, 0.8],
+ C: [0.35, 0.55],
+ D: [0.05, 0.15],
  };
  const [lo, hi] = bands[grade];
  const min = Math.round(ctx.originalPrice * lo);

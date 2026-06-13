@@ -57,11 +57,12 @@ router.post("/return-initiated",
  const finalPrice = pickFinalPrice(grading.suggestedPriceMin, grading.suggestedPriceMax);
  const neighbor = await findNeighborMatches(sellerCoords, product.category);
  const hasLocalBuyers =
- finalPrice <= 800 && neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
+ neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
 
  const decision = decideRoute({
  grade: grading.grade,
  suggestedPrice: finalPrice,
+ originalPrice: product.originalPrice,
  hasLocalBuyers,
  weightGrams: product.weightGrams ?? 500,
  category: product.category,

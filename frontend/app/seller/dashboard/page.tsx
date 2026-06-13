@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import Link from "next/link";
 
@@ -35,6 +36,7 @@ export default function SellerDashboard() {
  );
 
  return (
+ <RoleGuard allowed={["seller", "small_seller", "admin"]}>
  <div className="mx-auto max-w-6xl px-4 py-10">
  <div className="flex items-center justify-between flex-wrap gap-3">
  <h1 className="text-3xl font-bold">My returns</h1>
@@ -91,6 +93,7 @@ export default function SellerDashboard() {
  </table>
  </div>
  </div>
+ </RoleGuard>
  );
 }
 

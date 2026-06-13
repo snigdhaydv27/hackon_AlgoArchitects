@@ -6,23 +6,51 @@
   color-scheme: light;
 }
 html, body {
-  background: #fafbf9;
-  color: #0d2519;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #eaeded;
+  color: #0f1111;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium transition;
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm transition-all shadow-sm rounded-md border font-normal cursor-pointer select-none;
   }
-  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
-  .btn-secondary { @apply btn bg-white text-brand-700 border border-brand-200 hover:bg-brand-50; }
-  .btn-ghost { @apply btn text-slate-700 hover:bg-slate-100; }
-  .card { @apply bg-white border border-slate-200 rounded-2xl shadow-sm; }
-  .pill { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium; }
+  .btn-primary {
+    @apply btn bg-[#ffd814] text-[#0f1111] border-[#fcd200] hover:bg-[#f7ca00] active:bg-[#f0b800];
+  }
+  .btn-secondary {
+    @apply btn bg-white text-[#0f1111] border-[#d5d9d9] hover:bg-[#f7fafa] active:bg-[#f0f2f2];
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-slate-700 border-transparent hover:bg-slate-100 shadow-none;
+  }
+  .card {
+    @apply bg-white border border-[#d5d9d9] rounded-md shadow-sm p-6;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
   .gradient-bg {
-    background: radial-gradient(1200px 600px at 0% 0%, #d6f9e8 0%, transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, #ddf3ff 0%, transparent 60%),
-      #fafbf9;
+    background: linear-gradient(to bottom, #eaeded 0%, #eaeded 100%);
   }
+  .link-teal {
+    @apply text-[#007185] hover:text-[#c45500] hover:underline cursor-pointer;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.backdrop-blur-xxs {
+  backdrop-filter: blur(1px);
 }

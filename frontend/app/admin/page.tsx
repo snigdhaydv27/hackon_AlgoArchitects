@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import {
   ResponsiveContainer,
   BarChart,
@@ -15,7 +17,15 @@ import {
   Legend,
 } from "recharts";
 import { GradeBadge } from "@/components/GradeBadge";
-import { TrendingUp, Package, Users, Recycle as RecycleIcon } from "lucide-react";
+import {
+  TrendingUp,
+  Package,
+  Users,
+  Recycle as RecycleIcon,
+  Webhook,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
 interface Stats {
   totalReturns: number;
@@ -44,16 +54,77 @@ interface Ret {
   createdAt: string;
 }
 
+interface Persona { id: string; name: string; role: string; }
+interface Product { _id: string; title: string; }
+
 const COLORS = ["#1eb877", "#0ea5e9", "#f59e0b", "#ec4899", "#64748b"];
 
 export default function Admin() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [returns, setReturns] = useState<Ret[]>([]);
+  const [sellers, setSellers] = useState<Persona[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [simulating, setSimulating] = useState(false);
+  const [simResult, setSimResult] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== "admin")) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
+
+  async function refresh() {
+    const [s, r] = await Promise.all([
+      api<Stats>("/admin/stats"),
+      api<Ret[]>("/admin/returns"),
+    ]);
+    setStats(s);
+    setReturns(r);
+  }
 
   useEffect(() => {
-    api<Stats>("/admin/stats").then(setStats);
-    api<Ret[]>("/admin/returns").then(setReturns);
+    refresh();
+    api<Persona[]>("/auth/personas").then((all) =>
+      setSellers(all.filter((p) => p.role === "seller" || p.role === "small_seller"))
+    );
+    api<Product[]>("/products").then(setProducts);
   }, []);
+
+  async function simulate() {
+    setSimulating(true);
+    setSimResult(null);
+    try {
+      // Pick a random seller + random product to simulate a return webhook from parent platform
+      const seller = sellers[Math.floor(Math.random() * sellers.length)];
+      const product = products[Math.floor(Math.random() * products.length)];
+      if (!seller || !product) {
+        setSimResult("No sellers/products available — re-seed the database.");
+        return;
+      }
+      const r = await api<{ message: string; notifiedBuyers: number; decision: { route: string } }>(
+        "/webhooks/return-initiated",
+        {
+          method: "POST",
+          body: JSON.stringify({ sellerId: seller.id, productId: product._id }),
+        },
+      );
+      setSimResult(
+        `${seller.name} → ${product.title} → ${r.decision.route} · ${r.notifiedBuyers} buyers notified`
+      );
+      await refresh();
+    } catch (e) {
+      setSimResult("Error: " + String(e));
+    } finally {
+      setSimulating(false);
+    }
+  }
+
+  if (authLoading || !user || user.role !== "admin") {
+    return <div className="p-8 text-slate-500">Loading...</div>;
+  }
 
   if (!stats) return <div className="p-8 text-slate-500">Loading dashboard...</div>;
 
@@ -65,10 +136,37 @@ export default function Admin() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="text-3xl font-bold">ReLoop Operations</h1>
-      <p className="text-slate-600">
-        Real-time picture of recovery economics, route distribution, and Neighbor First impact.
-      </p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">ReLoop Operations</h1>
+          <p className="text-slate-600">
+            Real-time picture of recovery economics, route distribution, and Neighbor First impact.
+          </p>
+        </div>
+        <div className="card p-4 max-w-md">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Webhook className="size-4 text-brand-600" />
+            Parent platform webhook simulator
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Fires <code>POST /api/webhooks/return-initiated</code> as if Flipkart/Amazon initiated a return — fully automated pipeline runs.
+          </p>
+          <button
+            onClick={simulate}
+            disabled={simulating}
+            className="btn-primary text-sm mt-3 w-full"
+          >
+            {simulating ? <Loader2 className="size-4 animate-spin" /> : <Webhook className="size-4" />}
+            Simulate return webhook
+          </button>
+          {simResult && (
+            <div className="mt-3 text-xs flex items-start gap-2 bg-emerald-50 border border-emerald-200 rounded p-2 text-emerald-700">
+              <CheckCircle2 className="size-4 mt-0.5 shrink-0" />
+              <span>{simResult}</span>
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
@@ -105,13 +203,7 @@ export default function Admin() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={routeData}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={80}
-                  label
-                >
+                <Pie data={routeData} dataKey="value" nameKey="name" outerRadius={80} label>
                   {routeData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}

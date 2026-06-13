@@ -56,15 +56,15 @@ export default function Home() {
  return (
  <div className="gradient-bg">
  <section className="mx-auto max-w-6xl px-4 pt-16 pb-20">
- <div className="flex items-center gap-2 text-brand-700 mb-6">
- <Recycle className="size-5" />
- <span className="text-sm font-medium tracking-wide uppercase">
+ <div className="flex items-center gap-2 text-[#c45500] mb-6">
+ <Recycle className="size-5 text-[#ff9900]" />
+ <span className="text-sm font-semibold tracking-wide uppercase">
  Circular Commerce, Reimagined
  </span>
  </div>
- <h1 className="text-5xl sm:text-6xl font-bold leading-tight tracking-tight text-slate-900">
+ <h1 className="text-5xl sm:text-6xl font-black leading-tight tracking-tight text-slate-900">
  Every returned, unused, or outgrown product
- <span className="block text-brand-600">finds its next best owner.</span>
+ <span className="block text-[#c45500]">finds its next best owner.</span>
  </h1>
  <p className="mt-6 max-w-2xl text-lg text-slate-600">
  The system works for premium. For the long tail — ₹200 to ₹800 — it breaks.
@@ -98,7 +98,7 @@ export default function Home() {
  {PILLARS.map((p, i) => (
  <div key={p.title} className="card p-6">
  <div className="flex items-center gap-3">
- <div className="rounded-xl bg-brand-50 p-2 text-brand-700">
+ <div className="rounded-xl bg-[#ffd814]/15 p-2 text-[#b12704]">
  <p.icon className="size-5" />
  </div>
  <div className="text-xs font-semibold text-slate-400">
@@ -114,7 +114,7 @@ export default function Home() {
  </section>
 
  <section className="mx-auto max-w-6xl px-4 py-20">
- <div className="card p-8 bg-gradient-to-br from-brand-50 to-white">
+ <div className="card p-8 bg-gradient-to-br from-[#ffd814]/10 to-white">
  <h2 className="text-2xl font-bold text-slate-900">The economics</h2>
  <div className="mt-6 grid sm:grid-cols-3 gap-6">
  <Stat label="Liquidation today" value="₹0" caption="100% loss on long-tail returns" tone="bad" />
@@ -143,7 +143,7 @@ function Stat({
  <div className="text-sm text-slate-500">{label}</div>
  <div
  className={
- "text-4xl font-bold " + (tone === "good" ? "text-brand-600" : "text-rose-500")
+ "text-4xl font-bold " + (tone === "good" ? "text-[#b12704]" : "text-rose-600")
  }
  >
  {value}

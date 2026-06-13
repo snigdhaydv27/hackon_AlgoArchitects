@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import { HealthCard, type HealthCardData } from "@/components/HealthCard";
 import { RoutingDecision } from "@/components/RoutingDecision";
@@ -56,8 +57,8 @@ export default function NewReturn() {
   const { user, loading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [productId, setProductId] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<GradeResp | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,15 +71,26 @@ export default function NewReturn() {
     });
   }, []);
 
-  function onPick(f: File) {
-    setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreview(url);
+  function onPick(newFiles: FileList) {
+    const added = Array.from(newFiles);
+    const combined = [...files, ...added].slice(0, 10); // max 10
+    setFiles(combined);
+    setPreviews(combined.map((f) => URL.createObjectURL(f)));
+  }
+
+  function removeImage(index: number) {
+    const updated = files.filter((_, i) => i !== index);
+    setFiles(updated);
+    setPreviews(updated.map((f) => URL.createObjectURL(f)));
   }
 
   async function submit() {
-    if (!file || !productId) {
-      setError("Pick a product and upload an image");
+    if (files.length < 5) {
+      setError("Please upload at least 5 photos of the item");
+      return;
+    }
+    if (!productId) {
+      setError("Pick a product");
       return;
     }
     setError(null);
@@ -87,7 +99,7 @@ export default function NewReturn() {
     try {
       const fd = new FormData();
       fd.append("productId", productId);
-      fd.append("image", file);
+      files.forEach((f) => fd.append("images", f));
       const r = await api<GradeResp>("/returns", { method: "POST", body: fd });
       setResult(r);
     } catch (e) {
@@ -111,6 +123,7 @@ export default function NewReturn() {
   const selected = products.find((p) => p._id === productId);
 
   return (
+    <RoleGuard allowed={["seller", "small_seller", "admin"]}>
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex items-center gap-2 text-sm text-slate-500">
         <Package className="size-4" />
@@ -144,24 +157,44 @@ export default function NewReturn() {
           </div>
 
           <div className="card p-5">
-            <div className="text-sm font-semibold text-slate-700 mb-3">2. Upload condition photo</div>
+            <div className="text-sm font-semibold text-slate-700 mb-1">2. Upload condition photos</div>
+            <div className="text-xs text-slate-500 mb-3">Minimum 5 photos required (max 10). Show different angles, defects, labels.</div>
             <input
               ref={fileRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
+              multiple
               className="hidden"
-              onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])}
+              onChange={(e) => e.target.files && onPick(e.target.files)}
             />
-            {preview ? (
-              <div className="relative aspect-video bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={preview} alt="" className="w-full h-full object-contain" />
-                <button
-                  className="absolute bottom-3 right-3 btn-secondary text-xs"
-                  onClick={() => fileRef.current?.click()}
-                >
-                  Replace
-                </button>
+            {previews.length > 0 ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {previews.map((url, i) => (
+                    <div key={i} className="relative aspect-square bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1 right-1 size-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {previews.length < 10 && (
+                    <button
+                      onClick={() => fileRef.current?.click()}
+                      className="aspect-square border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:border-brand-400 hover:bg-brand-50 transition"
+                    >
+                      <Upload className="size-5" />
+                      <span className="text-xs mt-1">Add more</span>
+                    </button>
+                  )}
+                </div>
+                <div className={`text-xs font-medium ${files.length >= 5 ? "text-emerald-600" : "text-amber-600"}`}>
+                  {files.length}/5 minimum photos {files.length >= 5 ? "✓" : "(need " + (5 - files.length) + " more)"}
+                </div>
               </div>
             ) : (
               <button
@@ -169,13 +202,13 @@ export default function NewReturn() {
                 onClick={() => fileRef.current?.click()}
               >
                 <Upload className="size-8 mb-2" />
-                <div className="text-sm">Click to upload (JPEG/PNG/WEBP, ≤10MB)</div>
+                <div className="text-sm">Click to upload (min 5 photos, JPEG/PNG/WEBP, ≤10MB each)</div>
               </button>
             )}
           </div>
 
           <button
-            disabled={submitting || !file}
+            disabled={submitting || files.length < 5}
             onClick={submit}
             className="btn-primary w-full text-base disabled:opacity-50"
           >
@@ -206,11 +239,12 @@ export default function NewReturn() {
               </div>
             </div>
           ) : (
-            <Result data={result} preview={preview} />
+            <Result data={result} preview={previews[0] ?? null} />
           )}
         </div>
       </div>
     </div>
+    </RoleGuard>
   );
 }
 

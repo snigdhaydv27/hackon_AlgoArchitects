@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { RoleGuard } from "@/components/RoleGuard";
 import { AlertTriangle, Sparkles, ShieldCheck, Loader2 } from "lucide-react";
 
 interface Product {
@@ -68,6 +69,7 @@ export default function ProductPage() {
   if (!product) return <div className="p-8 text-slate-500">Loading...</div>;
 
   return (
+    <RoleGuard allowed={["buyer", "admin"]}>
     <div className="mx-auto max-w-5xl px-4 py-10 grid gap-8 lg:grid-cols-2">
       <div className="card aspect-square bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center text-slate-400">
         Product image
@@ -151,5 +153,6 @@ export default function ProductPage() {
         )}
       </div>
     </div>
+    </RoleGuard>
   );
 }

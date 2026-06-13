@@ -17,6 +17,7 @@
   "@aws-sdk/client-cognito-identity-provider": "^3.658.1",
   "@aws-sdk/client-s3": "^3.658.1",
   "@aws-sdk/s3-request-presigner": "^3.658.1",
+  "@google/genai": "^0.14.0",
   "cors": "^2.8.5",
   "dotenv": "^16.4.5",
   "express": "^4.21.0",

@@ -22,6 +22,7 @@ import productRoutes from "./routes/products.js";
 import paymentRoutes from "./routes/payment.js";
 import notificationRoutes from "./routes/notifications.js";
 import webhookRoutes from "./routes/webhooks.js";
+import chatRoutes from "./routes/chat.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -82,6 +83,7 @@ async function main() {
   app.use("/api/payment", paymentRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/webhooks", webhookRoutes);
+  app.use("/api/chat", chatRoutes);
 
   // --- Error handler (must be last) ---
   app.use(errorHandler);

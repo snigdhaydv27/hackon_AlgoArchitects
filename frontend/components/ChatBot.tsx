@@ -384,10 +384,9 @@ export function ChatBot() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = (textStr: string) => {
+  const handleSend = async (textStr: string) => {
     if (!textStr.trim()) return;
 
-    // FIXED: Using our environment-safe unique ID generator instead of crypto.randomUUID
     const userMsg: Msg = {
       id: generateId(),
       role: "user",
@@ -398,8 +397,18 @@ export function ChatBot() {
     setInput("");
     setMood("thinking");
 
-    setTimeout(() => {
-      const reply = answerFor(textStr);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("reloop_token") : null;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: textStr.trim() }),
+      });
+
+      const data = await res.json();
       setMood("talking");
 
       setMessages((prev) => [
@@ -407,13 +416,22 @@ export function ChatBot() {
         {
           id: generateId(),
           role: "bot",
-          text: reply.text,
-          chips: reply.chips,
+          text: data.reply || "Sorry, I couldn't process that. Please try again.",
         },
       ]);
 
-      setTimeout(() => setMood("idle"), Math.min(3000, reply.text.length * 30));
-    }, 800 + Math.random() * 600);
+      setTimeout(() => setMood("idle"), 3000);
+    } catch (error) {
+      setMood("idle");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateId(),
+          role: "bot",
+          text: "Oops! I'm having trouble connecting right now. Please try again in a moment.",
+        },
+      ]);
+    }
   };
 
   return (

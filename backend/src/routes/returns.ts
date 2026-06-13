@@ -16,16 +16,17 @@ import { generatePickupCode, makeQrDataUrl } from "../utils/qrcode.js";
 
 const router = Router();
 
-// Create a return: upload image, AI-grade, decide route, optionally create listing.
-router.post("/", requireAuth, upload.single("image"), async (req, res, next) => {
+// Create a return: upload images, AI-grade, decide route, optionally create listing.
+router.post("/", requireAuth, upload.array("images", 10), async (req, res, next) => {
  try {
  const { productId } = req.body;
  if (!productId) {
  res.status(400).json({ error: "productId required" });
  return;
  }
- if (!req.file) {
- res.status(400).json({ error: "image required" });
+ const files = req.files as Express.Multer.File[] | undefined;
+ if (!files || files.length < 5) {
+ res.status(400).json({ error: "Minimum 5 images required" });
  return;
  }
 
@@ -42,7 +43,13 @@ router.post("/", requireAuth, upload.single("image"), async (req, res, next) => 
  return;
  }
 
- const stored = await saveImage(req.file.buffer, req.file.mimetype);
+ const stored = await saveImage(files[0].buffer, files[0].mimetype);
+ // Save all images
+ const allStored = await Promise.all(
+ files.map((f) => saveImage(f.buffer, f.mimetype))
+ );
+ const allUrls = allStored.map((s) => s.url);
+
  const grader = getGrader();
  const grading = await grader.grade(
  { mime: stored.mime, base64: stored.base64 },
@@ -71,7 +78,7 @@ router.post("/", requireAuth, upload.single("image"), async (req, res, next) => 
  const ret = await ReturnModel.create({
  productId: product._id,
  sellerId: seller._id,
- images: [stored.url],
+ images: allUrls,
  aiGrade: grading.grade,
  aiSummary: grading.summary,
  defects: grading.defects,
@@ -106,7 +113,7 @@ router.post("/", requireAuth, upload.single("image"), async (req, res, next) => 
  priceFinal: finalPrice,
  title: product.title,
  grade: grading.grade,
- images: [stored.url],
+ images: allUrls,
  summary: grading.summary,
  defects: grading.defects,
  location: { type: "Point", coordinates: neighbor.nearestLocker.coordinates },

@@ -2,8 +2,12 @@ import { Router } from "express";
 import { ReturnModel } from "../models/Return.js";
 import { ListingModel } from "../models/Listing.js";
 import { ProductModel } from "../models/Product.js";
+import { requireAuth, requireRole } from "../middleware/mockAuth.js";
 
 const router = Router();
+
+// All admin routes require authentication + admin role
+router.use(requireAuth, requireRole("admin"));
 
 router.get("/stats", async (_req, res) => {
  const [returns, listings, products] = await Promise.all([

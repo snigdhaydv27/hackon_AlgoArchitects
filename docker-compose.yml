@@ -1,0 +1,49 @@
+services:
+ mongo:
+ image: mongo:7
+ restart: unless-stopped
+ ports:
+ - "27017:27017"
+ volumes:
+ - mongo-data:/data/db
+ healthcheck:
+ test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+ interval: 10s
+ timeout: 5s
+ retries: 6
+
+ backend:
+ build: ./backend
+ environment:
+ - PORT=8080
+ - MONGO_URI=mongodb://mongo:27017/reloop
+ - JWT_SECRET=${JWT_SECRET:-reloop-dev-secret-change-me}
+ - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:8080}
+ - AI_PROVIDER=${AI_PROVIDER:-anthropic}
+ - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+ - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
+ - AWS_REGION=${AWS_REGION:-us-east-1}
+ - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-anthropic.claude-sonnet-4-20250514-v1:0}
+ - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
+ - S3_BUCKET=${S3_BUCKET:-}
+ - S3_REGION=${S3_REGION:-ap-south-1}
+ ports:
+ - "8080:8080"
+ volumes:
+ - ./backend/uploads:/app/uploads
+ depends_on:
+ mongo:
+ condition: service_healthy
+
+ frontend:
+ build: ./frontend
+ environment:
+ - BACKEND_URL=http://backend:8080
+ ports:
+ - "3000:3000"
+ depends_on:
+ - backend
+
+volumes:
+ mongo-data:
+

@@ -1,0 +1,51 @@
+{
+  "family": "reloop",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/reloopTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/reloop-backend:latest",
+      "essential": true,
+      "portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "APP_MODE", "value": "production" },
+        { "name": "PORT", "value": "8080" },
+        { "name": "AI_PROVIDER", "value": "bedrock" },
+        { "name": "AWS_REGION", "value": "ap-south-1" },
+        { "name": "STORAGE_DRIVER", "value": "s3" },
+        { "name": "RATE_LIMIT_MAX", "value": "60" },
+        { "name": "LOG_LEVEL", "value": "info" }
+      ],
+      "secrets": [
+        { "name": "MONGO_URI", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/MONGO_URI" },
+        { "name": "JWT_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/JWT_SECRET" },
+        { "name": "WEBHOOK_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/WEBHOOK_SECRET" },
+        { "name": "RAZORPAY_KEY_ID", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/RAZORPAY_KEY_ID" },
+        { "name": "RAZORPAY_KEY_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/RAZORPAY_KEY_SECRET" },
+        { "name": "S3_BUCKET", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/S3_BUCKET" },
+        { "name": "CORS_ORIGINS", "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/reloop/CORS_ORIGINS" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 10
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/reloop",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "backend"
+        }
+      }
+    }
+  ]
+}

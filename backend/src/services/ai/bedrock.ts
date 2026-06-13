@@ -1,8 +1,6 @@
-
-
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { env } from "../../config/env.js";
-import { GradingContext, GradingProvider, GradingResult } from "./types.js";
+import { GradingContext, GradingProvider, GradingResult, ImageInput } from "./types.js";
 import { GRADER_SYSTEM, buildUserPrompt } from "./prompt.js";
 import { parseGradingJson } from "./parse.js";
 
@@ -14,25 +12,29 @@ export class BedrockGrader implements GradingProvider {
  this.client = new BedrockRuntimeClient({ region: env.bedrockRegion });
  }
 
- async grade(image: { mime: string; base64: string }, ctx: GradingContext): Promise<GradingResult> {
+ async grade(images: ImageInput[], ctx: GradingContext): Promise<GradingResult> {
  const start = Date.now();
+
+ // Build content array with ALL images
+ const contentParts: Array<Record<string, unknown>> = [];
+ for (const img of images) {
+ contentParts.push({
+ type: "image",
+ source: { type: "base64", media_type: img.mime, data: img.base64 },
+ });
+ }
+ contentParts.push({
+ type: "text",
+ text: buildUserPrompt(ctx) + `\n\nYou are analyzing ${images.length} photos of this item from different angles. Consider ALL images for your assessment.`,
+ });
+
  const body = {
  anthropic_version: "bedrock-2023-05-31",
  max_tokens: 600,
  system: GRADER_SYSTEM,
- messages: [
- {
- role: "user",
- content: [
- {
- type: "image",
- source: { type: "base64", media_type: image.mime, data: image.base64 },
- },
- { type: "text", text: buildUserPrompt(ctx) },
- ],
- },
- ],
+ messages: [{ role: "user", content: contentParts }],
  };
+
  const cmd = new InvokeModelCommand({
  modelId: env.bedrockModelId,
  contentType: "application/json",
@@ -49,4 +51,3 @@ export class BedrockGrader implements GradingProvider {
  return { ...parsed, latencyMs: Date.now() - start, provider: "bedrock" };
  }
 }
-

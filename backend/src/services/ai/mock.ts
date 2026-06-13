@@ -1,15 +1,17 @@
-import { GradingContext, GradingProvider, GradingResult } from "./types.js";
+import { GradingContext, GradingProvider, GradingResult, ImageInput } from "./types.js";
 
 // Deterministic but varied mock — used when no API key is configured.
 // Picks grade based on a hash of the image bytes so the same upload always grades the same.
 export class MockGrader implements GradingProvider {
  name = "mock" as const;
 
- async grade(image: { mime: string; base64: string }, ctx: GradingContext): Promise<GradingResult> {
+ async grade(images: ImageInput[], ctx: GradingContext): Promise<GradingResult> {
  const start = Date.now();
  await new Promise((r) => setTimeout(r, 600 + Math.random() * 400));
 
- const hash = simpleHash(image.base64.slice(0, 256));
+ // Use all images in the hash for more varied results
+ const combined = images.map((img) => img.base64.slice(0, 64)).join("");
+ const hash = simpleHash(combined);
  const grades = ["A", "B", "B", "C", "D"] as const;
  const grade = grades[hash % grades.length];
 
@@ -30,10 +32,10 @@ export class MockGrader implements GradingProvider {
  D: ["Heavy wear", "Functional but cosmetically damaged"],
  };
  const summaryByGrade: Record<typeof grade, string> = {
- A: `Like-new ${ctx.title}. No visible wear.`,
- B: `Lightly used ${ctx.title}. Fully functional with minor cosmetic marks.`,
- C: `Used ${ctx.title} with visible wear. Refurbish recommended.`,
- D: `Heavily worn ${ctx.title}. Best routed to recycling/donation.`,
+ A: `Like-new ${ctx.title}. No visible wear. All ${images.length} photos confirm pristine condition.`,
+ B: `Lightly used ${ctx.title}. Fully functional with minor cosmetic marks visible in ${images.length} angle review.`,
+ C: `Used ${ctx.title} with visible wear across ${images.length} photos. Refurbish recommended.`,
+ D: `Heavily worn ${ctx.title}. ${images.length}-photo analysis confirms damage. Best routed to recycling/donation.`,
  };
 
  return {
@@ -42,7 +44,7 @@ export class MockGrader implements GradingProvider {
  summary: summaryByGrade[grade],
  suggestedPriceMin: min,
  suggestedPriceMax: max,
- confidence: 0.78,
+ confidence: Math.min(0.95, 0.7 + images.length * 0.03), // more images = higher confidence
  latencyMs: Date.now() - start,
  provider: "mock",
  };
@@ -54,4 +56,3 @@ function simpleHash(s: string): number {
  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
  return Math.abs(h);
 }
-

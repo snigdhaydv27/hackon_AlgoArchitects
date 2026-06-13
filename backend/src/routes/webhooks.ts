@@ -44,7 +44,7 @@ router.post("/return-initiated",
  // and pass a blank base64 so the grader either uses real AI on a placeholder or the mock.
  const grader = getGrader();
  const grading = await grader.grade(
- { mime: "image/jpeg", base64: makePlaceholderJpeg() },
+ [{ mime: "image/jpeg", base64: makePlaceholderJpeg() }],
  {
  title: product.title,
  category: product.category,

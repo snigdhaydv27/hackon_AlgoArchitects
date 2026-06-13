@@ -50,9 +50,11 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  );
  const allUrls = allStored.map((s) => s.url);
 
+ // Send ALL images to AI for multi-angle analysis
  const grader = getGrader();
+ const allImageInputs = allStored.map((s) => ({ mime: s.mime, base64: s.base64 }));
  const grading = await grader.grade(
- { mime: stored.mime, base64: stored.base64 },
+ allImageInputs,
  {
  title: product.title,
  category: product.category,

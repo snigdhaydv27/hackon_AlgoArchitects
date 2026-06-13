@@ -1,20 +1,4 @@
 import crypto from "node:crypto";
-import { env } from "../config/env.js";
-
-let razorpayClient: any = null;
-
-async function client() {
-  if (razorpayClient) return razorpayClient;
-  if (!env.razorpayKeyId || !env.razorpayKeySecret) {
-    throw new Error("Razorpay keys not configured. Set RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET");
-  }
-  const Razorpay = (await import("razorpay")).default;
-  razorpayClient = new Razorpay({
-    key_id: env.razorpayKeyId,
-    key_secret: env.razorpayKeySecret,
-  });
-  return razorpayClient;
-}
 
 export interface RazorpayOrder {
   id: string;
@@ -23,13 +7,17 @@ export interface RazorpayOrder {
   receipt: string;
 }
 
-export async function createOrder(opts: {
-  amountInr: number;
-  receipt: string;
-  notes?: Record<string, string>;
-}): Promise<RazorpayOrder> {
-  const c = await client();
-  const order = await c.orders.create({
+// Create a Razorpay order using the seller's own credentials
+export async function createOrderWithSellerKeys(
+  keys: { keyId: string; keySecret: string },
+  opts: { amountInr: number; receipt: string; notes?: Record<string, string> }
+): Promise<RazorpayOrder> {
+  const Razorpay = (await import("razorpay")).default;
+  const client = new Razorpay({
+    key_id: keys.keyId,
+    key_secret: keys.keySecret,
+  });
+  const order = await (client as any).orders.create({
     amount: opts.amountInr * 100, // Razorpay wants paise
     currency: "INR",
     receipt: opts.receipt,
@@ -39,19 +27,15 @@ export async function createOrder(opts: {
   return order;
 }
 
-export function verifySignature(opts: {
-  orderId: string;
-  paymentId: string;
-  signature: string;
-}): boolean {
-  if (!env.razorpayKeySecret) return false;
+// Verify signature using the seller's secret
+export function verifySignatureWithSecret(
+  secret: string,
+  opts: { orderId: string; paymentId: string; signature: string }
+): boolean {
+  if (!secret) return false;
   const expected = crypto
-    .createHmac("sha256", env.razorpayKeySecret)
+    .createHmac("sha256", secret)
     .update(`${opts.orderId}|${opts.paymentId}`)
     .digest("hex");
   return expected === opts.signature;
-}
-
-export function isConfigured(): boolean {
-  return Boolean(env.razorpayKeyId && env.razorpayKeySecret);
 }

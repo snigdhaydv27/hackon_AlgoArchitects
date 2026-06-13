@@ -26,29 +26,28 @@ export function RazorpayButton({ listingId, amountInr, buyerName, buyerEmail, on
     setError(null);
     setLoading(true);
     try {
-      // 1. Create order on the backend
-      const { order, mock, keyId } = await api<{
+      // 1. Create order on the backend (uses the seller's Razorpay keys)
+      const { order, keyId } = await api<{
         order: { id: string; amount: number; currency: string };
-        mock: boolean;
-        keyId?: string;
+        keyId: string;
       }>(`/payment/order/${listingId}`, { method: "POST" });
 
-      // Mock path — Razorpay not configured. Skip the SDK and verify directly.
-      if (mock) {
-        await new Promise((r) => setTimeout(r, 800));
-        await api(`/payment/verify/${listingId}`, {
-          method: "POST",
-          body: JSON.stringify({ mock: true }),
+      // 2. Load Razorpay SDK if not already loaded
+      if (!window.Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
+          document.body.appendChild(script);
         });
-        onPaid();
+      }
+      if (!window.Razorpay) {
+        setError("Razorpay SDK failed to load. Please refresh and try again.");
         return;
       }
 
-      // 2. Open Razorpay checkout
-      if (!window.Razorpay) {
-        setError("Razorpay SDK not loaded. Refresh and retry.");
-        return;
-      }
+      // 3. Open Razorpay checkout (payment goes to seller's account)
       const rzp = new window.Razorpay({
         key: keyId,
         amount: order.amount,
@@ -86,14 +85,11 @@ export function RazorpayButton({ listingId, amountInr, buyerName, buyerEmail, on
     <div className="space-y-2">
       <button onClick={pay} disabled={loading} className="btn-primary w-full justify-start text-sm">
         {loading ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
-        Pay ₹{amountInr} via Razorpay
+        Pay ₹{amountInr}
       </button>
       {error && (
         <div className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded p-2">{error}</div>
       )}
-      <div className="text-xs text-slate-500">
-        Test mode — use card 4111 1111 1111 1111, any CVV, any future expiry. No real money moves.
-      </div>
     </div>
   );
 }

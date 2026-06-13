@@ -27,6 +27,8 @@ const UserSchema = new Schema(
  brand: { type: String },
  },
  verified: { type: Boolean, default: true },
+ razorpayKeyId: { type: String, default: "" },
+ razorpayKeySecret: { type: String, default: "" },
  },
  { timestamps: true }
 );

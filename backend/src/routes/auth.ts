@@ -274,6 +274,51 @@ router.get("/me", requireAuth, async (req, res) => {
   res.json(serializeUser(u));
 });
 
+// ============================================================
+// Seller Razorpay settings
+// ============================================================
+router.get("/me/payment-settings", requireAuth, async (req, res) => {
+  if (req.user!.role !== "seller" && req.user!.role !== "small_seller") {
+    res.status(403).json({ error: "Only sellers can access payment settings" });
+    return;
+  }
+  const u = await UserModel.findById(req.user!.id).lean();
+  if (!u) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  res.json({
+    razorpayKeyId: (u as any).razorpayKeyId || "",
+    configured: Boolean((u as any).razorpayKeyId && (u as any).razorpayKeySecret),
+  });
+});
+
+router.put("/me/payment-settings", requireAuth, async (req, res) => {
+  if (req.user!.role !== "seller" && req.user!.role !== "small_seller") {
+    res.status(403).json({ error: "Only sellers can update payment settings" });
+    return;
+  }
+  const { razorpayKeyId, razorpayKeySecret } = req.body ?? {};
+  if (!razorpayKeyId) {
+    res.status(400).json({ error: "razorpayKeyId is required" });
+    return;
+  }
+  if (!razorpayKeyId.startsWith("rzp_")) {
+    res.status(400).json({ error: "Invalid Razorpay Key ID format. It should start with 'rzp_'" });
+    return;
+  }
+
+  const updateFields: Record<string, string> = { razorpayKeyId };
+  // Only update secret if provided (allows keeping existing)
+  if (razorpayKeySecret) {
+    updateFields.razorpayKeySecret = razorpayKeySecret;
+  }
+
+  await UserModel.findByIdAndUpdate(req.user!.id, updateFields);
+
+  res.json({ ok: true, message: "Payment settings saved successfully" });
+});
+
 router.put("/me/location", requireAuth, async (req, res) => {
   const { lat, lng, address } = req.body ?? {};
   let coords: [number, number] | null = null;

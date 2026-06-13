@@ -251,6 +251,15 @@ export function Nav() {
                           📊 Seller Return Console
                         </Link>
                       </li>
+                      <li>
+                        <Link
+                          href="/seller/payment-settings"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          💳 Payment Settings
+                        </Link>
+                      </li>
                     </>
                   )}
                   {user?.role === "admin" && (

@@ -14,6 +14,9 @@ export default function ProfileSettingsPage() {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("");
   const [tagline, setTagline] = useState("");
+  
+  const [editMode, setEditMode] = useState<"name" | "avatar" | "tagline" | null>(null);
+  
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -24,26 +27,30 @@ export default function ProfileSettingsPage() {
     } else if (user) {
       setName(user.name || "");
       setAvatar(user.avatar || "");
-      // Hack to get tagline since it's not strictly typed in AuthUser but we added it to backend
       setTagline((user as any).tagline || "");
     }
   }, [user, loading, router]);
 
-  if (loading || !user) return <div className="p-8 text-center text-slate-500">Redirecting to login...</div>;
+  if (loading || !user) return <div className="p-8 text-center">Loading...</div>;
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSave(field: "name" | "avatar" | "tagline") {
     setSaving(true);
     setError("");
     setSuccess(false);
 
     try {
+      const payload = {
+        name: field === "name" ? name : user?.name,
+        avatar: field === "avatar" ? avatar : user?.avatar,
+        tagline: field === "tagline" ? tagline : (user as any)?.tagline,
+      };
+
       await api("/auth/me/profile", {
         method: "PUT",
-        body: JSON.stringify({ name, avatar, tagline }),
+        body: JSON.stringify(payload),
       });
       setSuccess(true);
-      // Reload the page to reflect updated global state
+      setEditMode(null);
       setTimeout(() => window.location.reload(), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to update profile");
@@ -58,8 +65,8 @@ export default function ProfileSettingsPage() {
         
         {/* Breadcrumb */}
         <div className="flex items-center text-sm mb-4 text-[#565959]">
-          <Link href="/account" className="hover:underline hover:text-[#c45500]">Your Account</Link>
-          <ChevronRight className="size-4 mx-1" />
+          <Link href="/account" className="hover:underline hover:text-[#007185]">Your Account</Link>
+          <ChevronRight className="size-4 mx-1 text-[#565959]" />
           <span className="text-[#c45500]">Login & security</span>
         </div>
 
@@ -79,22 +86,43 @@ export default function ProfileSettingsPage() {
           </div>
         )}
 
-        <div className="border border-[#D5D9D9] rounded-lg">
-          <form onSubmit={handleSave} className="divide-y divide-[#D5D9D9]">
-            
-            <div className="p-6">
-              <label className="block font-bold text-sm mb-2">Name</label>
+        <div className="border border-[#D5D9D9] rounded-lg overflow-hidden">
+          
+          {/* NAME ROW */}
+          {editMode === "name" ? (
+            <div className="p-6 border-b border-[#D5D9D9] bg-white">
+              <h3 className="font-bold text-sm mb-2">Change your name</h3>
               <input 
                 type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-[#888C8C] rounded px-3 py-2 focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] outline-none transition-all"
+                className="w-full border border-[#888C8C] rounded px-3 py-2 mb-4 focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] outline-none transition-all"
                 required
               />
+              <button 
+                onClick={() => handleSave("name")}
+                disabled={saving}
+                className="bg-[#F7CA00] hover:bg-[#F0B800] border border-[#A2A6AC] rounded-lg px-6 py-2 text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save changes"}
+              </button>
             </div>
+          ) : (
+            <div className="p-4 border-b border-[#D5D9D9] flex justify-between items-center hover:bg-slate-50 transition-colors">
+              <div>
+                <p className="font-bold text-sm">Name</p>
+                <p className="text-sm text-[#565959]">{user.name}</p>
+              </div>
+              <button onClick={() => setEditMode("name")} className="border border-[#D5D9D9] px-6 py-1.5 rounded-lg shadow-sm bg-white hover:bg-slate-50 text-sm font-semibold">
+                Edit
+              </button>
+            </div>
+          )}
 
-            <div className="p-6">
-              <label className="block font-bold text-sm mb-2">Avatar URL</label>
+          {/* AVATAR ROW */}
+          {editMode === "avatar" ? (
+            <div className="p-6 border-b border-[#D5D9D9] bg-white">
+              <h3 className="font-bold text-sm mb-2">Change your avatar URL</h3>
               <input 
                 type="url" 
                 value={avatar}
@@ -102,11 +130,31 @@ export default function ProfileSettingsPage() {
                 placeholder="https://example.com/avatar.png"
                 className="w-full border border-[#888C8C] rounded px-3 py-2 focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] outline-none transition-all"
               />
-              <p className="text-xs text-[#565959] mt-2">Paste a direct link to an image file.</p>
+              <p className="text-xs text-[#565959] mt-2 mb-4">Paste a direct link to an image file.</p>
+              <button 
+                onClick={() => handleSave("avatar")}
+                disabled={saving}
+                className="bg-[#F7CA00] hover:bg-[#F0B800] border border-[#A2A6AC] rounded-lg px-6 py-2 text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save changes"}
+              </button>
             </div>
+          ) : (
+            <div className="p-4 border-b border-[#D5D9D9] flex justify-between items-center hover:bg-slate-50 transition-colors">
+              <div>
+                <p className="font-bold text-sm">Avatar</p>
+                <p className="text-sm text-[#565959] truncate max-w-[300px]">{user.avatar || "Not set"}</p>
+              </div>
+              <button onClick={() => setEditMode("avatar")} className="border border-[#D5D9D9] px-6 py-1.5 rounded-lg shadow-sm bg-white hover:bg-slate-50 text-sm font-semibold">
+                Edit
+              </button>
+            </div>
+          )}
 
-            <div className="p-6">
-              <label className="block font-bold text-sm mb-2">Tagline</label>
+          {/* TAGLINE ROW */}
+          {editMode === "tagline" ? (
+            <div className="p-6 bg-white">
+              <h3 className="font-bold text-sm mb-2">Change your tagline</h3>
               <input 
                 type="text" 
                 value={tagline}
@@ -114,19 +162,34 @@ export default function ProfileSettingsPage() {
                 placeholder="e.g. Eco-conscious Shopper"
                 className="w-full border border-[#888C8C] rounded px-3 py-2 focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] outline-none transition-all"
               />
-              <p className="text-xs text-[#565959] mt-2">A short description displayed on your public profile.</p>
-            </div>
-
-            <div className="p-6 bg-[#F3F3F3] rounded-b-lg flex justify-end">
+              <p className="text-xs text-[#565959] mt-2 mb-4">A short description displayed on your public profile.</p>
               <button 
-                type="submit"
+                onClick={() => handleSave("tagline")}
                 disabled={saving}
                 className="bg-[#F7CA00] hover:bg-[#F0B800] border border-[#A2A6AC] rounded-lg px-6 py-2 text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save changes"}
               </button>
             </div>
-          </form>
+          ) : (
+            <div className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+              <div>
+                <p className="font-bold text-sm">Tagline</p>
+                <p className="text-sm text-[#565959]">{(user as any).tagline || "Not set"}</p>
+              </div>
+              <button onClick={() => setEditMode("tagline")} className="border border-[#D5D9D9] px-6 py-1.5 rounded-lg shadow-sm bg-white hover:bg-slate-50 text-sm font-semibold">
+                Edit
+              </button>
+            </div>
+          )}
+
+        </div>
+        
+        {/* Done button at bottom to return */}
+        <div className="mt-6 flex justify-end">
+          <Link href="/account" className="border border-[#D5D9D9] bg-slate-100 hover:bg-slate-200 rounded-lg px-6 py-2 text-sm font-bold shadow-sm transition-colors text-[#0F1111]">
+            Done
+          </Link>
         </div>
 
       </div>

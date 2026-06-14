@@ -69,7 +69,7 @@ export default function NewReturn() {
     api<Product[]>("/products").then((p) => {
       setProducts(p);
       if (p[0]) setProductId(p[0]._id);
-    });
+    }).catch(() => {});
   }, []);
 
   function onPick(newFiles: FileList) {

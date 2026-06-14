@@ -42,7 +42,7 @@ export default function ProductPage() {
       setProduct(p);
       const first = p.variants.sizes[0] ?? "";
       setSize(first);
-    });
+    }).catch(() => {});
   }, [params.productId]);
 
   // AUTO-FIRE prevention check whenever size changes (no manual button click).
@@ -69,7 +69,13 @@ export default function ProductPage() {
     };
   }, [product, size]);
 
-  if (!product) return <div className="p-8 text-slate-500">Loading...</div>;
+  if (!product) {
+    return (
+      <RoleGuard allowed={["buyer", "admin"]}>
+        <div className="p-8 text-slate-500">Loading...</div>
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard allowed={["buyer", "admin"]}>

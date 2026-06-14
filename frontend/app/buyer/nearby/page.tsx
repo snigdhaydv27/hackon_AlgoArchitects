@@ -36,12 +36,13 @@ export default function NearbyListings() {
  }, [user, loading]);
 
  if (loading) return <div className="p-8 text-slate-500">Loading...</div>;
- if (!user)
+ if (!user) {
  return (
- <div className="p-8">
- <p>Please log in as a buyer.</p>
- </div>
+ <RoleGuard allowed={["buyer", "admin"]}>
+ <div />
+ </RoleGuard>
  );
+ }
 
  return (
  <RoleGuard allowed={["buyer", "admin"]}>

@@ -19,7 +19,7 @@ export default function Shop() {
   const [list, setList] = useState<Product[]>([]);
 
   useEffect(() => {
-    api<Product[]>("/products").then(setList);
+    api<Product[]>("/products").then(setList).catch(() => {});
   }, []);
 
   return (

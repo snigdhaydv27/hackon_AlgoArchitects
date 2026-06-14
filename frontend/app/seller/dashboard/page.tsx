@@ -23,7 +23,7 @@ export default function SellerDashboard() {
  const [list, setList] = useState<Ret[]>([]);
 
  useEffect(() => {
- api<Ret[]>("/returns").then(setList);
+ api<Ret[]>("/returns").then(setList).catch(() => {});
  }, []);
 
  const totals = list.reduce(

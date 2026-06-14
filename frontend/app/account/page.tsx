@@ -16,7 +16,7 @@ export default function AccountPage() {
     }
   }, [user, loading, router]);
 
-  if (loading || !user) return <div className="p-8 text-center">Loading...</div>;
+  if (loading || !user) return <div className="p-8 text-center text-slate-500">Redirecting to login...</div>;
 
   const isSeller = user.role === "seller" || user.role === "small_seller";
 

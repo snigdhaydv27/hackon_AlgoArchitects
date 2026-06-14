@@ -29,7 +29,7 @@ export default function ProfileSettingsPage() {
     }
   }, [user, loading, router]);
 
-  if (loading || !user) return <div className="p-8 text-center">Loading...</div>;
+  if (loading || !user) return <div className="p-8 text-center text-slate-500">Redirecting to login...</div>;
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

@@ -92,8 +92,8 @@ export default function Admin() {
     refresh();
     api<Persona[]>("/auth/personas").then((all) =>
       setSellers(all.filter((p) => p.role === "seller" || p.role === "small_seller"))
-    );
-    api<Product[]>("/products").then(setProducts);
+    ).catch(() => {});
+    api<Product[]>("/products").then(setProducts).catch(() => {});
   }, []);
 
   async function simulate() {

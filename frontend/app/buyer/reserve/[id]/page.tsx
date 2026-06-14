@@ -78,10 +78,12 @@ export default function Reserve() {
 
   if (!data) {
     return (
-      <div className="p-8 text-slate-500 flex items-center gap-2">
-        <Loader2 className="size-4 animate-spin" />
-        Loading...
-      </div>
+      <RoleGuard allowed={["buyer", "admin"]}>
+        <div className="p-8 text-slate-500 flex items-center gap-2">
+          <Loader2 className="size-4 animate-spin" />
+          Loading...
+        </div>
+      </RoleGuard>
     );
   }
 

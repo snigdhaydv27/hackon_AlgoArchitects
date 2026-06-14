@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
@@ -331,6 +332,7 @@ const HELP_CONTENT: Record<string, HelpTopic> = {
 };
 
 export default function HelpPage() {
+  const { user } = useAuth();
   const [activeTopicId, setActiveTopicId] = useState<string>("purchase-protection");
 
   const [feedbackState, setFeedbackState] = useState<"idle" | "yes" | "no" | "submitted">("idle");
@@ -357,9 +359,9 @@ export default function HelpPage() {
         <div className="w-full md:w-56 shrink-0">
           <h3 className="text-[17px] font-bold mb-4">Help and Customer Service</h3>
           
-          <div className="mb-6">
-            <h4 className="text-[13px] text-[#565959] mb-1 pl-2 border-l border-[#D5D9D9] ml-1">&lt; All Help Topics</h4>
-            <h4 className="text-[14px] font-bold text-[#0F1111] mt-3 mb-2">Site Features</h4>
+          <div className="mb-6 border border-[#D5D9D9] bg-[#F9F9F9] rounded-lg p-4 shadow-sm">
+            <h4 className="text-[13px] text-[#565959] mb-3 font-semibold hover:underline cursor-pointer">&lt; All Help Topics</h4>
+            <h4 className="text-[14px] font-bold text-[#0F1111] mb-2">Site Features</h4>
             <ul className="space-y-2 text-[13px]">
               {Object.values(HELP_CONTENT).map((topic) => (
                 <li key={topic.id}>
@@ -379,50 +381,77 @@ export default function HelpPage() {
           <div className="border-t border-[#D5D9D9] pt-4">
             <h4 className="text-[14px] font-bold text-[#0F1111] mb-4">Quick solutions</h4>
             <ul className="space-y-4">
-              <li>
-                <Link href="/seller/dashboard" className="flex gap-3 items-start group">
-                  <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                    <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/box-swap._CB432223847_.png" alt="Orders" className="w-full h-full object-contain opacity-80" />
-                  </div>
-                  <div>
-                    <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Your Orders</span>
-                    <span className="text-[11px] text-[#565959]">Track or cancel orders</span>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link href="/seller/return/new" className="flex gap-3 items-start group">
-                  <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                    <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/returns-box-blue._CB406180351_.png" alt="Returns" className="w-full h-full object-contain opacity-80" />
-                  </div>
-                  <div>
-                    <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Returns and Refunds</span>
-                    <span className="text-[11px] text-[#565959]">Return or exchange items</span>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link href="/shop" className="flex gap-3 items-start group">
-                  <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                    <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/Prime_clear-bg._CB406180351_.png" alt="Prime" className="w-full h-full object-contain opacity-80" />
-                  </div>
-                  <div>
-                    <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Manage Green Credits</span>
-                    <span className="text-[11px] text-[#565959]">Cancel or view benefits</span>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link href="/login" className="flex gap-3 items-start group">
-                  <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                    <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/account._CB406180351_.png" alt="Account Settings" className="w-full h-full object-contain opacity-80" />
-                  </div>
-                  <div>
-                    <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Account Settings</span>
-                    <span className="text-[11px] text-[#565959]">Update email, password or phone</span>
-                  </div>
-                </Link>
-              </li>
+              
+              {(user?.role === "buyer" || user?.role === "seller" || user?.role === "small_seller") && (
+                <li>
+                  <Link href="/orders" className="flex gap-3 items-start group">
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/box-swap._CB432223847_.png" alt="Orders" className="w-full h-full object-contain opacity-80" />
+                    </div>
+                    <div>
+                      <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Your Orders</span>
+                      <span className="text-[11px] text-[#565959]">Track or cancel orders</span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
+              {user?.role === "buyer" && (
+                <li>
+                  <Link href="/orders" className="flex gap-3 items-start group">
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/returns-box-blue._CB406180351_.png" alt="Returns" className="w-full h-full object-contain opacity-80" />
+                    </div>
+                    <div>
+                      <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Returns and Refunds</span>
+                      <span className="text-[11px] text-[#565959]">Return or exchange items</span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
+              {(user?.role === "seller" || user?.role === "small_seller") && (
+                <li>
+                  <Link href="/seller/dashboard" className="flex gap-3 items-start group">
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/returns-box-blue._CB406180351_.png" alt="Returns" className="w-full h-full object-contain opacity-80" />
+                    </div>
+                    <div>
+                      <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Seller Dashboard</span>
+                      <span className="text-[11px] text-[#565959]">Manage inventory and returns</span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
+              {(user?.role === "buyer" || user?.role === "locker") && (
+                <li>
+                  <Link href="/credits" className="flex gap-3 items-start group">
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/Prime_clear-bg._CB406180351_.png" alt="Credits" className="w-full h-full object-contain opacity-80" />
+                    </div>
+                    <div>
+                      <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Manage Green Credits</span>
+                      <span className="text-[11px] text-[#565959]">Cancel or view benefits</span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
+              {user && (
+                <li>
+                  <Link href="/account" className="flex gap-3 items-start group">
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <img src="https://m.media-amazon.com/images/G/31/x-locale/cs/help/images/gateway/account._CB406180351_.png" alt="Account Settings" className="w-full h-full object-contain opacity-80" />
+                    </div>
+                    <div>
+                      <span className="text-[13px] text-[#007185] group-hover:underline group-hover:text-[#C45500] font-bold block">Account Settings</span>
+                      <span className="text-[11px] text-[#565959]">Update email, password or phone</span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
             </ul>
           </div>
         </div>

@@ -15,6 +15,44 @@ type HelpTopic = {
 };
 
 const HELP_CONTENT: Record<string, HelpTopic> = {
+  "interest-based-ads": {
+    id: "interest-based-ads",
+    title: "Interest-Based Ads",
+    breadcrumb: "Legal & Privacy",
+    content: (
+      <>
+        <p className="text-[13px] mb-6 text-[#0F1111]">
+          ReLoop displays interest-based advertising on our sites and apps. Interest-based ads, sometimes referred to as personalized or targeted ads, are displayed to you based on information from activities such as purchasing on our sites, visiting sites that contain ReLoop content or ads, interacting with ReLoop tools, or using our payment services.
+        </p>
+        <div className="border-b border-[#D5D9D9] w-full mb-6"></div>
+        <div className="space-y-6 text-[13px] text-[#0F1111] leading-relaxed">
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">How We Personalize Ads in a Circular Economy</h3>
+            <p className="mb-2">
+              Unlike traditional retail, ReLoop focuses on a circular, sustainable economy. We use your browsing history, past purchases, and AI-graded return behavior to recommend:
+            </p>
+            <ul className="list-disc pl-5 space-y-2 mb-4">
+              <li>Refurbished items matching your exact specifications.</li>
+              <li>Products available in Kirana lockers near your specific geographic location, minimizing carbon footprint.</li>
+              <li>Items with high "Green Credits" potential based on your previous sustainable shopping habits.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">What Information Do We Share?</h3>
+            <p className="mb-2">
+              We do not share your personal information (such as name or email) with unaffiliated third parties for their own marketing use. Your data is strictly used to match you with nearby, verified buyers and sellers within the ReLoop ecosystem to optimize the hyperlocal network.
+            </p>
+          </section>
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">Advertising Preferences</h3>
+            <p className="mb-2">
+              You can opt out of receiving interest-based ads from ReLoop at any time by visiting your Account Settings and navigating to the Advertising Preferences page. Note that if you opt out, you will still see ads, but they will not be based on your interests or local neighborhood availability.
+            </p>
+          </section>
+        </div>
+      </>
+    )
+  },
   "privacy-notice": {
     id: "privacy-notice",
     title: "Privacy Notice",

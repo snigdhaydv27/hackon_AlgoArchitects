@@ -77,7 +77,7 @@ export function Footer() {
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
           <Link href="/help?topic=conditions-of-use" className="hover:underline">Conditions of Use</Link>
           <Link href="/help?topic=privacy-notice" className="hover:underline">Privacy Notice</Link>
-          <Link href="/" className="hover:underline">Interest-Based Ads</Link>
+          <Link href="/help?topic=interest-based-ads" className="hover:underline">Interest-Based Ads</Link>
           <span className="text-slate-600">|</span>
           <span>© 2026-2027 ReLoop.inc or its affiliates. All rights reserved.</span>
         </div>

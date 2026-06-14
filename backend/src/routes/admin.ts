@@ -2,6 +2,7 @@ import { Router } from "express";
 import { ReturnModel } from "../models/Return.js";
 import { ListingModel } from "../models/Listing.js";
 import { ProductModel } from "../models/Product.js";
+import { OrderModel } from "../models/Order.js";
 import { requireAuth, requireRole } from "../middleware/mockAuth.js";
 
 const router = Router();
@@ -64,6 +65,14 @@ router.get("/returns", async (_req, res) => {
  .populate("sellerId", "name role")
  .lean();
  res.json(list);
+});
+
+router.get("/orders", async (_req, res) => {
+  const list = await OrderModel.find({})
+    .sort({ createdAt: -1 })
+    .populate("userId", "name role")
+    .lean();
+  res.json(list);
 });
 
 export default router;

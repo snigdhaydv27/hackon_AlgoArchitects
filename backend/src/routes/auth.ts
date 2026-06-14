@@ -20,8 +20,9 @@ router.get("/personas", requireDemoMode(), async (_req, res) => {
       id: String(u._id),
       name: u.name,
       role: u.role,
-      tagline: u.tagline,
-      avatar: u.avatar,
+      age: u.age,
+      gender: u.gender,
+      mobile: u.mobile,
       address: u.address,
     }))
   );
@@ -329,11 +330,11 @@ router.put("/me/payment-settings", requireAuth, async (req, res) => {
 });
 
 router.put("/me/profile", requireAuth, async (req, res) => {
-  const { name, avatar, tagline } = req.body ?? {};
+  const { name, age, gender, mobile } = req.body ?? {};
 
   const updated = await UserModel.findByIdAndUpdate(
     req.user!.id,
-    { $set: { name, avatar, tagline } },
+    { $set: { name, age, gender, mobile } },
     { new: true }
   ).lean();
 
@@ -385,7 +386,9 @@ function serializeUser(u: Record<string, unknown> & { _id: unknown }) {
     id: String(u._id),
     name: u.name,
     role: u.role,
-    avatar: u.avatar,
+    age: u.age,
+    gender: u.gender,
+    mobile: u.mobile,
     address: u.address,
     location: u.location,
     profile: u.profile,

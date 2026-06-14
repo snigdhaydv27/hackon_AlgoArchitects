@@ -10,7 +10,6 @@ export interface NeighborMatch {
  name: string;
  distanceKm: number;
  interests: string[];
- avatar?: string;
  }>;
  nearestLocker: {
  _id: string;
@@ -49,7 +48,6 @@ export async function findNeighborMatches(
  haversineKm(sellerLocation, b.location!.coordinates as [number, number])
  ),
  interests: b.interests ?? [],
- avatar: b.avatar ?? undefined,
  }));
 
  // Nearest locker (any partner type) within 5km — kirana network

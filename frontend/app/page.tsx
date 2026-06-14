@@ -81,10 +81,7 @@ export default function Home() {
               Try the Interactive Demo
               <ArrowRight className="size-5 ml-2" />
             </Link>
-            <Link href="/admin" className="bg-[#F8F9FA] hover:bg-[#E3E6E6] border border-[#D5D9D9] text-[#0F1111] font-semibold text-lg px-8 py-3 rounded-full flex items-center justify-center transition-colors shadow-sm">
-              <TrendingUp className="size-5 mr-2 text-[#565959]" />
-              View Economics Dashboard
-            </Link>
+
           </div>
         </div>
       </section>

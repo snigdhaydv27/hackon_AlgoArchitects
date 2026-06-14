@@ -81,6 +81,7 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  const ret = await ReturnModel.create({
  productId: product._id,
  sellerId: seller._id,
+ originalSellerId: product.sellerId ?? null, // original seller who listed this product
  images: allUrls,
  aiGrade: grading.grade,
  aiSummary: grading.summary,
@@ -94,6 +95,7 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  sellerLocation: { type: "Point", coordinates: sellerCoords },
  status: "ROUTED",
  refundAmount: product.originalPrice,
+ resellStatus: "PENDING_RESELL",
  });
 
  let listing = null;
@@ -188,6 +190,156 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
 
 router.get("/", requireAuth, async (req, res) => {
  const list = await ReturnModel.find({ sellerId: req.user!.id })
+ .sort({ createdAt: -1 })
+ .populate("productId")
+ .lean();
+ res.json(list);
+});
+
+// GET /api/returns/pending-resell — Returns assigned back to the original seller for resale
+router.get("/pending-resell", requireAuth, async (req, res) => {
+ const list = await ReturnModel.find({
+ originalSellerId: req.user!.id,
+ resellStatus: "PENDING_RESELL",
+ })
+ .sort({ createdAt: -1 })
+ .populate("productId")
+ .lean();
+ res.json(list);
+});
+
+// GET /api/returns/resell-products — Products from returns pending resell (for the dropdown)
+router.get("/resell-products", requireAuth, async (req, res) => {
+ const returns = await ReturnModel.find({
+ originalSellerId: req.user!.id,
+ resellStatus: "PENDING_RESELL",
+ })
+ .populate("productId")
+ .lean();
+
+ const products = returns
+ .filter((r) => r.productId)
+ .map((r) => {
+ const p = r.productId as any;
+ return {
+ _id: String(p._id),
+ title: p.title,
+ category: p.category,
+ brand: p.brand,
+ originalPrice: p.originalPrice,
+ images: p.images ?? [],
+ returnId: String(r._id),
+ aiGrade: r.aiGrade,
+ aiSummary: r.aiSummary,
+ isResellItem: true,
+ };
+ });
+ res.json(products);
+});
+
+// PATCH /api/returns/:id/mark-resold — Seller marks a pending resell item as resold/listed
+router.patch("/:id/mark-resold", requireAuth, async (req, res) => {
+ const ret = await ReturnModel.findOne({
+ _id: req.params.id,
+ originalSellerId: req.user!.id,
+ resellStatus: "PENDING_RESELL",
+ });
+ if (!ret) {
+ res.status(404).json({ error: "Return not found or not pending resell" });
+ return;
+ }
+ ret.resellStatus = "LISTED_FOR_RESELL";
+ await ret.save();
+ res.json({ ok: true, return: ret.toObject() });
+});
+
+// ============================================================
+// BUYER RETURN — buyer returns an item they purchased
+// ============================================================
+router.post("/buyer-return", requireAuth, async (req, res, next) => {
+ try {
+ const { orderId, productId, reason } = req.body ?? {};
+ if (!orderId || !productId) {
+ res.status(400).json({ error: "orderId and productId required" });
+ return;
+ }
+
+ const { OrderModel } = await import("../models/Order.js");
+ const order = await OrderModel.findOne({ _id: orderId, userId: req.user!.id }).lean();
+ if (!order) {
+ res.status(404).json({ error: "Order not found" });
+ return;
+ }
+
+ // Only delivered/paid orders can be returned
+ if (order.status !== "DELIVERED" && order.status !== "PAID") {
+ res.status(400).json({ error: `Only delivered orders can be returned. Current status: ${order.status}` });
+ return;
+ }
+
+ // Check within 7 days
+ const orderDate = new Date(order.createdAt as any);
+ const daysSinceOrder = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+ if (daysSinceOrder > 7) {
+ res.status(400).json({ error: "Return window expired. Returns are only allowed within 7 days." });
+ return;
+ }
+
+ // Find the product
+ const product = await ProductModel.findById(productId).lean();
+ if (!product) {
+ res.status(404).json({ error: "Product not found" });
+ return;
+ }
+
+ // Get the original seller of this product
+ const originalSellerId = (product as any).sellerId || null;
+
+ // Get the order item to find the price paid
+ const orderItem = (order.items as any[]).find((i: any) => String(i.productId) === productId);
+ const pricePaid = orderItem?.price || product.originalPrice;
+
+ // Create the return record
+ const buyer = await UserModel.findById(req.user!.id).lean();
+ const buyerCoords = buyer?.location?.coordinates as [number, number] || [77.5946, 12.9716];
+
+ const ret = await ReturnModel.create({
+ productId: product._id,
+ sellerId: req.user!.id, // buyer who is returning
+ originalSellerId, // seller from whom it was purchased
+ images: product.images || [],
+ aiGrade: "B", // auto-grade for buyer returns (can be improved later)
+ aiSummary: reason || "Buyer initiated return within 7-day window.",
+ defects: [],
+ confidence: 0.85,
+ priceBand: { min: Math.round(pricePaid * 0.6), max: Math.round(pricePaid * 0.85) },
+ route: "NEIGHBOR_FIRST",
+ routeReason: "Buyer return — routed back to seller for resale",
+ estimatedRecovery: Math.round(pricePaid * 0.7),
+ logisticsCost: 0,
+ sellerLocation: { type: "Point", coordinates: buyerCoords },
+ status: "ROUTED",
+ refundAmount: pricePaid,
+ sellerRefundIssued: true,
+ resellStatus: "PENDING_RESELL",
+ });
+
+ // Update order status
+ await OrderModel.findByIdAndUpdate(orderId, { status: "CANCELLED" });
+
+ res.json({
+ ok: true,
+ message: "Return initiated successfully. Refund will be processed.",
+ return: ret.toObject(),
+ });
+ } catch (e) {
+ next(e);
+ }
+});
+
+// GET /api/returns/my-buyer-returns — Returns initiated by the buyer
+router.get("/my-buyer-returns", requireAuth, async (req, res) => {
+ const list = await ReturnModel.find({ sellerId: req.user!.id, originalSellerId: { $ne: null } })
  .sort({ createdAt: -1 })
  .populate("productId")
  .lean();

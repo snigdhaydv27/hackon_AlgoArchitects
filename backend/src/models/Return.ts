@@ -19,6 +19,7 @@ const ReturnSchema = new Schema(
  {
  productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
  sellerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+ originalSellerId: { type: Schema.Types.ObjectId, ref: "User" }, // seller from whom item was originally purchased
  images: { type: [String], default: [] },
  aiGrade: { type: String, enum: ["A", "B", "C", "D"] },
  aiSummary: { type: String },
@@ -36,6 +37,7 @@ const ReturnSchema = new Schema(
  status: { type: String, enum: RETURN_STATUS, default: "PENDING_GRADE" },
  refundAmount: { type: Number, default: 0 },
  sellerRefundIssued: { type: Boolean, default: false },
+ resellStatus: { type: String, enum: ["PENDING_RESELL", "RESOLD", "LISTED_FOR_RESELL", null], default: null },
  },
  { timestamps: true }
 );

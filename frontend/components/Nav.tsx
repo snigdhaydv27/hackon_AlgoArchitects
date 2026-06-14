@@ -7,7 +7,7 @@ import { useCart } from "@/lib/cart";
 import { api } from "@/lib/api";
 import { Recycle, LogOut, MapPin, ChevronDown, User, X, Crosshair, Loader2 } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
-import { BarChart3, Map, ShoppingBag, Package, Sparkles } from "lucide-react";
+import { BarChart3, Map, ShoppingBag, Package, Sparkles, RotateCcw } from "lucide-react";
 
 export function Nav() {
   const { user, logout } = useAuth();
@@ -58,11 +58,12 @@ export function Nav() {
             {/* Sign In & Account Links */}
             {user ? (
               <div className="flex items-center gap-2">
-                <Link href="/account" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded select-none cursor-pointer leading-none">
+                <div className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded select-none cursor-pointer leading-none">
                   <span className="text-[#ccc] text-[10px]">Hello, {user.name}</span>
                   <span className="font-bold text-white flex items-center gap-0.5 mt-0.5">
                     {user.role} <ChevronDown className="size-3 text-[#ccc]" />
                   </span>
+<<<<<<< Updated upstream
                 </Link>
                 {user.role !== "admin" && user.role !== "locker" && (
                   <Link href="/orders" className="hidden sm:flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
@@ -70,6 +71,9 @@ export function Nav() {
                     <span className="font-bold text-white mt-0.5">& Orders</span>
                   </Link>
                 )}
+=======
+                </div>
+>>>>>>> Stashed changes
               </div>
             ) : (
               <Link href="/login" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
@@ -263,6 +267,15 @@ export function Nav() {
                       </li>
                       <li>
                         <Link
+                          href="/seller/resells"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          🔄 Pending Resells
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
                           href="/seller/payment-settings"
                           onClick={() => setSidebarOpen(false)}
                           className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
@@ -304,6 +317,17 @@ export function Nav() {
                         </Link>
                       </li>
                     </>
+                  )}
+                  {user?.role === "buyer" && (
+                    <li>
+                      <Link
+                        href="/buyer/orders"
+                        onClick={() => setSidebarOpen(false)}
+                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                      >
+                        🛍️ My Orders & Returns
+                      </Link>
+                    </li>
                   )}
                   {user?.role === "buyer" && (
                     <li>
@@ -533,6 +557,7 @@ function navLinks(role?: string) {
   }
   if (role === "buyer") {
     return [
+      { href: "/buyer/orders", label: "Orders", icon: ShoppingBag },
       { href: "/buyer/nearby", label: "Nearby", icon: Map },
       { href: "/buyer/recommended", label: "For You", icon: Sparkles },
       { href: "/shop", label: "Shop", icon: ShoppingBag },
@@ -547,5 +572,6 @@ function navLinks(role?: string) {
   return [
     { href: "/seller/return/new", label: "New Return", icon: Package },
     { href: "/seller/dashboard", label: "My Returns", icon: BarChart3 },
+    { href: "/seller/resells", label: "Resells", icon: RotateCcw },
   ];
 }

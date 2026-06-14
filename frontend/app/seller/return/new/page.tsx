@@ -23,6 +23,9 @@ interface Product {
   brand?: string;
   originalPrice: number;
   images: string[];
+  isResellItem?: boolean;
+  aiGrade?: string;
+  returnId?: string;
 }
 
 interface GradeResp {
@@ -66,7 +69,7 @@ export default function NewReturn() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    api<Product[]>("/products").then((p) => {
+    api<Product[]>("/products/for-seller").then((p) => {
       setProducts(p);
       if (p[0]) setProductId(p[0]._id);
     }).catch(() => {});
@@ -145,14 +148,17 @@ export default function NewReturn() {
               className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
             >
               {products.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.title} — ₹{p.originalPrice} — {p.category}
+                <option key={p._id + (p.returnId ?? "")} value={p._id}>
+                  {p.isResellItem ? "🔄 " : ""}{p.title} — ₹{p.originalPrice} — {p.category}{p.aiGrade ? ` (Grade ${p.aiGrade})` : ""}
                 </option>
               ))}
             </select>
             {selected && (
               <div className="mt-3 text-xs text-slate-500">
                 Original price ₹{selected.originalPrice}. Brand {selected.brand}.
+                {selected.isResellItem && (
+                  <span className="ml-2 text-amber-600 font-medium">⚡ Returned item — ready for resell</span>
+                )}
               </div>
             )}
           </div>

@@ -17,6 +17,7 @@ const ProductSchema = new Schema(
  colors: { type: [String], default: [] },
  },
  weightGrams: { type: Number, default: 500 },
+ sellerId: { type: Schema.Types.ObjectId, ref: "User" }, // original seller who owns this product
  },
  { timestamps: true }
 );

@@ -439,6 +439,146 @@ async function seedDemoActivity(opts: {
  });
 
  // ===================================================================
+ // PENDING RESELL RETURNS — items returned by buyers, assigned to sellers
+ // ===================================================================
+ // Simulate: buyer Neha returned Sparx shoes back to seller Priya
+ await ReturnModel.create({
+ productId: opts.products[0]._id,
+ sellerId: opts.buyers[0]._id, // Neha (buyer who returned)
+ originalSellerId: opts.sellers[0]._id, // Priya (original seller)
+ images: opts.products[0].images || [],
+ aiGrade: "B",
+ aiSummary: "Returned shoes — slightly used, minor sole wear. Good for resale.",
+ defects: ["Minor sole wear on heel"],
+ confidence: 0.88,
+ priceBand: { min: 350, max: 480 },
+ route: "NEIGHBOR_FIRST",
+ routeReason: "Local buyers found within 8km",
+ estimatedRecovery: 400,
+ logisticsCost: 0,
+ sellerLocation: opts.sellers[0].location,
+ status: "ROUTED",
+ refundAmount: 599,
+ sellerRefundIssued: true,
+ resellStatus: "PENDING_RESELL",
+ });
+
+ // Simulate: buyer Karthik returned baby monitor back to seller Priya
+ await ReturnModel.create({
+ productId: opts.products[1]._id,
+ sellerId: opts.buyers[1]._id, // Karthik (buyer who returned)
+ originalSellerId: opts.sellers[0]._id, // Priya (original seller)
+ images: opts.products[1].images || [],
+ aiGrade: "A",
+ aiSummary: "Returned baby monitor — barely used, fully functional with packaging.",
+ defects: [],
+ confidence: 0.93,
+ priceBand: { min: 3200, max: 3800 },
+ route: "RENEWED",
+ routeReason: "Grade A, high value item",
+ estimatedRecovery: 3500,
+ logisticsCost: 0,
+ sellerLocation: opts.sellers[0].location,
+ status: "ROUTED",
+ refundAmount: 4500,
+ sellerRefundIssued: true,
+ resellStatus: "PENDING_RESELL",
+ });
+
+ // Simulate: buyer returned earbuds to small seller Anjali
+ await ReturnModel.create({
+ productId: opts.products[5]._id,
+ sellerId: opts.buyers[2]._id, // Meera (buyer who returned)
+ originalSellerId: opts.small._id, // Anjali (small seller)
+ images: opts.products[5].images || [],
+ aiGrade: "B",
+ aiSummary: "Returned earbuds — working perfectly, light cosmetic marks on case.",
+ defects: ["Light scratch on case"],
+ confidence: 0.85,
+ priceBand: { min: 450, max: 600 },
+ route: "NEIGHBOR_FIRST",
+ routeReason: "Local buyers found within 8km",
+ estimatedRecovery: 520,
+ logisticsCost: 0,
+ sellerLocation: opts.small.location,
+ status: "ROUTED",
+ refundAmount: 799,
+ sellerRefundIssued: true,
+ resellStatus: "PENDING_RESELL",
+ });
+
+ console.log("[seed] created 3 PENDING_RESELL returns for sellers");
+
+ // ===================================================================
+ // BUYER ORDERS — so buyers can test the return flow
+ // ===================================================================
+ const { OrderModel } = await import("../models/Order.js");
+ await OrderModel.deleteMany({});
+
+ // Neha bought Sparx shoes from Priya
+ await OrderModel.create({
+ userId: opts.buyers[0]._id, // Neha
+ items: [
+ { productId: opts.products[0]._id, title: "Sparx Running Shoes", variant: "Size 7 - Black", price: 599, quantity: 1 },
+ ],
+ totalAmount: 599,
+ shippingAddress: "HSR Layout, Bangalore",
+ status: "DELIVERED",
+ paymentRef: "DEMO_PAY_001",
+ });
+
+ // Neha also bought a water bottle — delivered
+ await OrderModel.create({
+ userId: opts.buyers[0]._id, // Neha
+ items: [
+ { productId: opts.products[3]._id, title: "Stainless Steel Water Bottle", variant: "Silver", price: 449, quantity: 1 },
+ ],
+ totalAmount: 449,
+ shippingAddress: "HSR Layout, Bangalore",
+ status: "DELIVERED",
+ paymentRef: "DEMO_PAY_002",
+ });
+
+ // Karthik bought baby monitor from Priya — delivered
+ await OrderModel.create({
+ userId: opts.buyers[1]._id, // Karthik
+ items: [
+ { productId: opts.products[1]._id, title: "Philips Avent Baby Monitor", variant: "White", price: 4500, quantity: 1 },
+ ],
+ totalAmount: 4500,
+ shippingAddress: "Jayanagar, Bangalore",
+ status: "DELIVERED",
+ paymentRef: "DEMO_PAY_003",
+ });
+
+ // Meera bought earbuds + kurta from Anjali — delivered
+ await OrderModel.create({
+ userId: opts.buyers[2]._id, // Meera
+ items: [
+ { productId: opts.products[5]._id, title: "Bluetooth Earbuds", variant: "Black", price: 799, quantity: 1 },
+ { productId: opts.products[2]._id, title: "Cotton Kurta Set", variant: "M - Indigo", price: 799, quantity: 1 },
+ ],
+ totalAmount: 1598,
+ shippingAddress: "Indiranagar, Bangalore",
+ status: "DELIVERED",
+ paymentRef: "DEMO_PAY_004",
+ });
+
+ // Neha has a pending order (not yet delivered)
+ await OrderModel.create({
+ userId: opts.buyers[0]._id, // Neha
+ items: [
+ { productId: opts.products[4]._id, title: "Kids' Trekking Sandals", variant: "Size 3 - Brown", price: 549, quantity: 1 },
+ ],
+ totalAmount: 549,
+ shippingAddress: "HSR Layout, Bangalore",
+ status: "SHIPPED",
+ paymentRef: "DEMO_PAY_005",
+ });
+
+ console.log("[seed] created 5 demo orders for buyers");
+
+ // ===================================================================
  // LIVE LISTINGS — these power the personalized recommendations engine
  // ===================================================================
  const { generatePickupCode, makeQrDataUrl } = await import("../utils/qrcode.js");
@@ -619,6 +759,15 @@ async function main() {
  await LockerModel.findByIdAndUpdate(lockers[0]._id, { userId: lockerPartner._id });
  console.log(`[seed] linked locker "${lockers[0].name}" to user "${lockerPartner.name}"`);
  }
+
+ // Assign products to sellers so returns can track originalSellerId
+ // Products 0,1,4 -> Priya (seller), Products 2,3,5 -> Anjali (small_seller)
+ const priya = sellers.find((s) => s._id.toString() === users.find((u) => u.name === "Priya Sharma")?._id.toString());
+ if (priya) {
+ await ProductModel.updateMany({ _id: { $in: [products[0]._id, products[1]._id, products[4]._id] } }, { sellerId: priya._id });
+ }
+ await ProductModel.updateMany({ _id: { $in: [products[2]._id, products[3]._id, products[5]._id] } }, { sellerId: small._id });
+ console.log("[seed] assigned sellerId to products");
 
  console.log("[seed] seeding demo activity + LIVE listings...");
  await seedDemoActivity({

@@ -8,6 +8,7 @@ import { ToastProvider } from "@/lib/toast";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import  { ChatBot } from "@/components/ChatBot";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <CartProvider>
             <ToastProvider>
+              <Toaster position="top-right" toastOptions={{ duration: 4000, style: { fontSize: '14px' } }} />
               <Nav />
               <main className="pt-24 flex-grow">{children}</main>
               <ChatBot />

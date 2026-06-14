@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import toast from "react-hot-toast";
 import { User, ShieldCheck, Briefcase, ShoppingBag, Mail, Lock, Loader2, Package } from "lucide-react";
 
 interface Persona {
@@ -57,7 +58,9 @@ export default function Login() {
       const dest = u.role === "admin" ? "/admin" : u.role === "buyer" ? "/buyer/nearby" : u.role === "locker" ? "/locker/dashboard" : "/seller/return/new";
       router.push(dest);
     } catch (e) {
-      setError(String(e));
+      const msg = String(e);
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(null);
     }
@@ -99,7 +102,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
       const dest = resp.user.role === "admin" ? "/admin" : resp.user.role === "buyer" ? "/buyer/nearby" : resp.user.role === "locker" ? "/locker/dashboard" : "/seller/return/new";
       router.push(dest);
     } catch (e: any) {
-      setError(e.message ?? String(e));
+      const errMsg = e.message ?? String(e); setError(errMsg); toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -121,7 +124,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
         setMode("signin");
       }
     } catch (e: any) {
-      setError(e.message ?? String(e));
+      const errMsg = e.message ?? String(e); setError(errMsg); toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -139,7 +142,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
       setMessage("Email verified! You can sign in now.");
       setMode("signin");
     } catch (e: any) {
-      setError(e.message ?? String(e));
+      const errMsg = e.message ?? String(e); setError(errMsg); toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -157,7 +160,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
       setMessage(resp.message);
       setMode("reset");
     } catch (e: any) {
-      setError(e.message ?? String(e));
+      const errMsg = e.message ?? String(e); setError(errMsg); toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -177,7 +180,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
       setCode("");
       setMode("signin");
     } catch (e: any) {
-      setError(e.message ?? String(e));
+      const errMsg = e.message ?? String(e); setError(errMsg); toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -200,9 +203,6 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
           : "Enter the 6-digit code sent to your email"}
       </p>
 
-      {error && (
-        <div className="mt-4 rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{error}</div>
-      )}
       {message && (
         <div className="mt-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700">{message}</div>
       )}
@@ -367,7 +367,6 @@ function PersonaPicker({ list, loading, error, onPick }: {
     <div className="mx-auto max-w-5xl px-4 py-12">
       <h1 className="text-3xl font-bold">Pick a demo persona</h1>
       <p className="text-slate-600 mt-2">Demo mode — one click, you&apos;re in.</p>
-      {error && <div className="mt-4 rounded-lg bg-rose-50 border border-rose-200 p-4 text-rose-700">{error}</div>}
       <div className="mt-8 space-y-8">
         {order.map((role) =>
           grouped[role]?.length ? (

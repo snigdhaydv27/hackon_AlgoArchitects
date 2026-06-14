@@ -236,9 +236,6 @@ export default function NewReturn() {
               </>
             )}
           </button>
-          {error && (
-            <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">{error}</div>
-          )}
         </div>
 
         <div className="space-y-6">

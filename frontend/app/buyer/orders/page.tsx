@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useToast } from "@/lib/toast";
 import { RoleGuard } from "@/components/RoleGuard";
 import { Package, RotateCcw, ShoppingBag, Loader2, Truck, AlertTriangle } from "lucide-react";
 
@@ -47,8 +48,8 @@ export default function BuyerOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [returningItem, setReturningItem] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState("");
-  const [returnError, setReturnError] = useState<string | null>(null);
   const [showReturnModal, setShowReturnModal] = useState<{ orderId: string; productId: string; title: string } | null>(null);
+  const { showError, showSuccess } = useToast();
 
   function fetchData() {
     setLoading(true);
@@ -69,7 +70,6 @@ export default function BuyerOrdersPage() {
   async function initiateReturn() {
     if (!showReturnModal) return;
     setReturningItem(showReturnModal.productId);
-    setReturnError(null);
     try {
       await api("/returns/buyer-return", {
         method: "POST",
@@ -81,13 +81,13 @@ export default function BuyerOrdersPage() {
       });
       setShowReturnModal(null);
       setReturnReason("");
+      showSuccess("Return initiated successfully! Refund will be processed.");
       // Refresh both lists
       api<Order[]>("/cart/orders").then(setOrders).catch(() => {});
       api<BuyerReturn[]>("/returns/my-buyer-returns").then(setReturns).catch(() => {});
       setTab("returns");
     } catch (e: any) {
-      const msg = e.message || String(e);
-      setReturnError(msg.replace(/^API \d+:\s*/, "").replace(/^\{.*"error":"/, "").replace(/"\}.*$/, ""));
+      showError(e.message || "Failed to initiate return");
     } finally {
       setReturningItem(null);
     }
@@ -264,7 +264,7 @@ export default function BuyerOrdersPage() {
         {/* Return Confirmation Modal */}
         {showReturnModal && (
           <>
-            <div className="fixed inset-0 bg-black/50 z-50" onClick={() => { setShowReturnModal(null); setReturnError(null); }} />
+            <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowReturnModal(null)} />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2 mb-4">
@@ -286,12 +286,9 @@ export default function BuyerOrdersPage() {
                 <p className="mt-3 text-xs text-slate-500">
                   Your refund will be processed after the return is confirmed. The item will be sent back to the seller for resale.
                 </p>
-                {returnError && (
-                  <div className="mt-3 rounded-lg bg-rose-50 border border-rose-200 p-2 text-xs text-rose-700">{returnError}</div>
-                )}
                 <div className="mt-5 flex gap-3">
                   <button
-                    onClick={() => { setShowReturnModal(null); setReturnError(null); }}
+                    onClick={() => setShowReturnModal(null)}
                     className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-lg transition cursor-pointer"
                   >
                     Cancel

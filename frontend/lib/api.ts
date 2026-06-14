@@ -20,7 +20,15 @@ export async function api<T = unknown>(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+    // Try to parse JSON error and extract the "error" field
+    let message = res.statusText;
+    try {
+      const json = JSON.parse(text);
+      message = json.error || json.message || text;
+    } catch {
+      message = text || res.statusText;
+    }
+    throw new Error(message);
   }
   if (res.status === 204) return null as T;
   return (await res.json()) as T;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
@@ -333,6 +333,20 @@ const HELP_CONTENT: Record<string, HelpTopic> = {
 export default function HelpPage() {
   const [activeTopicId, setActiveTopicId] = useState<string>("purchase-protection");
 
+  const [feedbackState, setFeedbackState] = useState<"idle" | "yes" | "no" | "submitted">("idle");
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+
+  useEffect(() => {
+    setFeedbackState("idle");
+    setSelectedReasons([]);
+  }, [activeTopicId]);
+
+  const handleReasonChange = (reason: string) => {
+    setSelectedReasons(prev => 
+      prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]
+    );
+  };
+
   const activeTopic = HELP_CONTENT[activeTopicId];
 
   return (
@@ -446,15 +460,56 @@ export default function HelpPage() {
           {/* Helpful Widget */}
           <div className="mt-12 mb-12 border-t border-[#D5D9D9] pt-6 w-full">
             <div className="border border-[#D5D9D9] rounded-[8px] p-4 inline-block shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full max-w-[400px]">
-              <p className="text-[14px] text-[#0F1111] mb-3 font-semibold text-center md:text-left">Was this information helpful?</p>
-              <div className="flex gap-2 justify-center md:justify-start">
-                <button className="bg-white hover:bg-[#F3F3F3] border border-[#D5D9D9] rounded-[8px] text-[#0F1111] px-5 py-1.5 text-[13px] shadow-[0_2px_5px_rgba(15,17,17,0.15)] focus:ring-2 focus:ring-[#008296] focus:border-transparent w-20">
-                  Yes
-                </button>
-                <button className="bg-white hover:bg-[#F3F3F3] border border-[#D5D9D9] rounded-[8px] text-[#0F1111] px-5 py-1.5 text-[13px] shadow-[0_2px_5px_rgba(15,17,17,0.15)] focus:ring-2 focus:ring-[#008296] focus:border-transparent w-20">
-                  No
-                </button>
-              </div>
+              
+              {feedbackState === "idle" && (
+                <>
+                  <p className="text-[14px] text-[#0F1111] mb-3 font-semibold text-center md:text-left">Was this information helpful?</p>
+                  <div className="flex gap-2 justify-center md:justify-start">
+                    <button onClick={() => setFeedbackState("yes")} className="bg-white hover:bg-[#F3F3F3] border border-[#D5D9D9] rounded-[8px] text-[#0F1111] px-5 py-1.5 text-[13px] shadow-[0_2px_5px_rgba(15,17,17,0.15)] focus:ring-2 focus:ring-[#008296] focus:border-transparent w-20 transition-all">
+                      Yes
+                    </button>
+                    <button onClick={() => setFeedbackState("no")} className="bg-white hover:bg-[#F3F3F3] border border-[#D5D9D9] rounded-[8px] text-[#0F1111] px-5 py-1.5 text-[13px] shadow-[0_2px_5px_rgba(15,17,17,0.15)] focus:ring-2 focus:ring-[#008296] focus:border-transparent w-20 transition-all">
+                      No
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {(feedbackState === "yes" || feedbackState === "submitted") && (
+                <div className="flex items-center gap-2 justify-center md:justify-start">
+                  <div className="text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                  </div>
+                  <p className="text-[14px] font-bold text-[#0F1111]">Thank you for your feedback.</p>
+                </div>
+              )}
+
+              {feedbackState === "no" && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-[14px] text-[#0F1111] font-bold">Why wasn't this helpful?</p>
+                  <label className="flex items-start gap-2 text-[13px] cursor-pointer">
+                    <input type="checkbox" className="mt-1 accent-[#007185]" onChange={() => handleReasonChange("Information is confusing")} />
+                    Information is confusing
+                  </label>
+                  <label className="flex items-start gap-2 text-[13px] cursor-pointer">
+                    <input type="checkbox" className="mt-1 accent-[#007185]" onChange={() => handleReasonChange("Information is incorrect")} />
+                    Information is incorrect
+                  </label>
+                  <label className="flex items-start gap-2 text-[13px] cursor-pointer">
+                    <input type="checkbox" className="mt-1 accent-[#007185]" onChange={() => handleReasonChange("Didn't answer my question")} />
+                    Didn't answer my question
+                  </label>
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={() => setFeedbackState("submitted")} className="bg-[#F7CA00] hover:bg-[#F0B800] border border-[#A2A6AC] rounded-[8px] text-[#0F1111] px-4 py-1.5 text-[13px] font-bold shadow-sm transition-all">
+                      Submit
+                    </button>
+                    <button onClick={() => setFeedbackState("idle")} className="bg-white hover:bg-[#F3F3F3] border border-[#D5D9D9] rounded-[8px] text-[#0F1111] px-4 py-1.5 text-[13px] shadow-[0_2px_5px_rgba(15,17,17,0.15)] transition-all">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 

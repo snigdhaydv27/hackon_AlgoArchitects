@@ -11,6 +11,62 @@ import { getRecommendations } from "../services/recommendations.js";
 
 const router = Router();
 
+// GET /api/listings/shop — Public: returned/renewed items visible in the shop section
+router.get("/shop", async (req, res) => {
+ const page = Math.max(1, Number(req.query.page) || 1);
+ const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+ const skip = (page - 1) * limit;
+ const category = req.query.category as string | undefined;
+
+ const filter: Record<string, unknown> = { status: "LIVE" };
+ if (category) filter["productId.category"] = category;
+
+ const [items, total] = await Promise.all([
+ ListingModel.find({ status: "LIVE" })
+ .sort({ createdAt: -1 })
+ .skip(skip)
+ .limit(limit)
+ .populate("productId", "title category brand originalPrice images")
+ .populate("lockerId", "name address")
+ .lean(),
+ ListingModel.countDocuments({ status: "LIVE" }),
+ ]);
+
+ // Filter by category if specified (post-populate filter)
+ const filtered = category
+ ? items.filter((item) => {
+ const prod = item.productId as any;
+ return prod?.category?.toLowerCase() === category.toLowerCase();
+ })
+ : items;
+
+ const shopItems = filtered.map((item) => {
+ const prod = item.productId as any;
+ const locker = item.lockerId as any;
+ const originalPrice = prod?.originalPrice ?? item.priceFinal * 2;
+ const savingsPercent = Math.round(((originalPrice - item.priceFinal) / originalPrice) * 100);
+ return {
+ _id: String(item._id),
+ title: item.title,
+ grade: item.grade,
+ priceFinal: item.priceFinal,
+ originalPrice,
+ savingsPercent,
+ summary: item.summary,
+ defects: item.defects,
+ images: item.images ?? prod?.images ?? [],
+ category: prod?.category ?? "",
+ brand: prod?.brand ?? "",
+ locker: locker ? { name: locker.name, address: locker.address } : null,
+ status: item.status,
+ createdAt: (item as any).createdAt,
+ isReturnedItem: true,
+ };
+ });
+
+ res.json({ items: shopItems, total, page, limit });
+});
+
 router.get("/nearby", requireAuth, async (req, res) => {
  const me = await UserModel.findById(req.user!.id).lean();
  if (!me) {

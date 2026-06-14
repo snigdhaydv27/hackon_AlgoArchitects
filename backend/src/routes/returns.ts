@@ -6,6 +6,7 @@ import { UserModel } from "../models/User.js";
 import { ReturnModel } from "../models/Return.js";
 import { ListingModel } from "../models/Listing.js";
 import { LockerModel } from "../models/Locker.js";
+import { NotificationModel } from "../models/Notification.js";
 import { saveImage } from "../services/storage.js";
 import { getGrader } from "../services/ai/provider.js";
 import { decideRoute } from "../services/routing.js";
@@ -220,21 +221,65 @@ router.get("/", requireAuth, async (req, res) => {
 
 // GET /api/returns/pending-resell — Returns assigned back to the original seller for resale
 router.get("/pending-resell", requireAuth, async (req, res) => {
- const list = await ReturnModel.find({
+ // Find returns where this seller is the originalSellerId (from buyer returns)
+ // OR where this seller's products were returned (via product.sellerId lookup)
+ const directReturns = await ReturnModel.find({
  originalSellerId: req.user!.id,
  resellStatus: "PENDING_RESELL",
  })
  .sort({ createdAt: -1 })
  .populate("productId")
  .lean();
- res.json(list);
+
+ // Also find returns for products owned by this seller that might not have originalSellerId set
+ const myProducts = await ProductModel.find({ sellerId: req.user!.id }).select("_id").lean();
+ const myProductIds = myProducts.map((p) => p._id);
+
+ let productReturns: any[] = [];
+ if (myProductIds.length > 0) {
+ productReturns = await ReturnModel.find({
+ productId: { $in: myProductIds },
+ resellStatus: "PENDING_RESELL",
+ originalSellerId: { $in: [null, undefined] }, // only those not already linked
+ })
+ .sort({ createdAt: -1 })
+ .populate("productId")
+ .lean();
+
+ // Fix: update these returns to set originalSellerId so they show up next time
+ if (productReturns.length > 0) {
+ const ids = productReturns.map((r) => r._id);
+ await ReturnModel.updateMany(
+ { _id: { $in: ids } },
+ { originalSellerId: req.user!.id }
+ );
+ }
+ }
+
+ // Merge and deduplicate
+ const allIds = new Set(directReturns.map((r) => String(r._id)));
+ const merged = [...directReturns];
+ for (const r of productReturns) {
+ if (!allIds.has(String(r._id))) {
+ merged.push(r);
+ }
+ }
+
+ res.json(merged);
 });
 
 // GET /api/returns/resell-products — Products from returns pending resell (for the dropdown)
 router.get("/resell-products", requireAuth, async (req, res) => {
+ // Same logic as pending-resell: check both originalSellerId AND product ownership
+ const myProducts = await ProductModel.find({ sellerId: req.user!.id }).select("_id").lean();
+ const myProductIds = myProducts.map((p) => p._id);
+
  const returns = await ReturnModel.find({
- originalSellerId: req.user!.id,
  resellStatus: "PENDING_RESELL",
+ $or: [
+ { originalSellerId: req.user!.id },
+ ...(myProductIds.length > 0 ? [{ productId: { $in: myProductIds } }] : []),
+ ],
  })
  .populate("productId")
  .lean();
@@ -257,6 +302,192 @@ router.get("/resell-products", requireAuth, async (req, res) => {
  };
  });
  res.json(products);
+});
+
+// POST /api/returns/resell-as-returned — Full auto-flow: seller picks a pending-resell item,
+// uploads images, AI grades it, assigns to nearest locker, notifies nearby buyers — one click.
+router.post("/resell-as-returned", requireAuth, upload.array("images", 10), async (req, res, next) => {
+ try {
+ const { returnId } = req.body;
+ if (!returnId) {
+ res.status(400).json({ error: "returnId required" });
+ return;
+ }
+
+ // Find the pending resell return assigned to this seller
+ const pendingReturn = await ReturnModel.findOne({
+ _id: returnId,
+ resellStatus: "PENDING_RESELL",
+ $or: [
+ { originalSellerId: req.user!.id },
+ { productId: { $in: (await ProductModel.find({ sellerId: req.user!.id }).select("_id").lean()).map((p) => p._id) } },
+ ],
+ });
+ if (!pendingReturn) {
+ res.status(404).json({ error: "Return not found or not pending resell for you" });
+ return;
+ }
+
+ const [product, seller] = await Promise.all([
+ ProductModel.findById(pendingReturn.productId).lean(),
+ UserModel.findById(req.user!.id).lean(),
+ ]);
+ if (!product) {
+ res.status(404).json({ error: "Product not found" });
+ return;
+ }
+ if (!seller) {
+ res.status(404).json({ error: "Seller not found" });
+ return;
+ }
+
+ // Use uploaded images if provided, otherwise reuse images from the original return
+ const files = req.files as Express.Multer.File[] | undefined;
+ let allUrls: string[];
+ let gradeImages: { mime: string; base64: string }[];
+
+ if (files && files.length >= 1) {
+ const allStored = await Promise.all(
+ files.map((f) => saveImage(f.buffer, f.mimetype))
+ );
+ allUrls = allStored.map((s) => s.url);
+ gradeImages = allStored.map((s) => ({ mime: s.mime, base64: s.base64 }));
+ } else {
+ // Reuse existing images from the return for AI grading
+ allUrls = pendingReturn.images ?? product.images ?? [];
+ // For AI grading with existing images, create mock image data
+ gradeImages = [{ mime: "image/jpeg", base64: Buffer.from("reuse-existing").toString("base64") }];
+ }
+
+ // AI grade the item
+ const grader = getGrader();
+ const grading = await grader.grade(
+ gradeImages,
+ {
+ title: product.title,
+ category: product.category,
+ brand: product.brand ?? undefined,
+ originalPrice: product.originalPrice,
+ }
+ );
+
+ // Use buyer's location (from original return) for neighbor matching
+ let matchCoords: [number, number] = seller.location!.coordinates as [number, number];
+ if (pendingReturn.sellerLocation?.coordinates) {
+ matchCoords = pendingReturn.sellerLocation.coordinates as [number, number];
+ }
+
+ const finalPrice = pickFinalPrice(grading.suggestedPriceMin, grading.suggestedPriceMax);
+ const neighbor = await findNeighborMatches(matchCoords, product.category);
+ const hasLocalBuyers =
+ finalPrice <= 800 && neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
+
+ const decision = decideRoute({
+ grade: grading.grade,
+ suggestedPrice: finalPrice,
+ originalPrice: product.originalPrice,
+ hasLocalBuyers,
+ weightGrams: product.weightGrams ?? 500,
+ category: product.category,
+ });
+
+ let listing = null;
+ let healthCard = null;
+
+ // Create listing at nearest locker
+ if (neighbor.nearestLocker) {
+ const pickupCode = generatePickupCode();
+ const qr = await makeQrDataUrl(
+ JSON.stringify({ code: pickupCode, returnId: String(pendingReturn._id) })
+ );
+ listing = await ListingModel.create({
+ returnId: pendingReturn._id,
+ productId: product._id,
+ sellerId: req.user!.id,
+ lockerId: neighbor.nearestLocker._id,
+ priceFinal: finalPrice,
+ title: product.title,
+ grade: grading.grade,
+ images: allUrls,
+ summary: grading.summary,
+ defects: grading.defects,
+ location: { type: "Point", coordinates: neighbor.nearestLocker.coordinates },
+ status: "LIVE",
+ pickupCode,
+ qrDataUrl: qr,
+ expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 2 weeks
+ });
+
+ // Update return status
+ pendingReturn.resellStatus = "LISTED_FOR_RESELL";
+ pendingReturn.status = "LISTED";
+ pendingReturn.aiGrade = grading.grade;
+ pendingReturn.aiSummary = grading.summary;
+ pendingReturn.defects = grading.defects;
+ pendingReturn.confidence = grading.confidence;
+ pendingReturn.priceBand = { min: grading.suggestedPriceMin, max: grading.suggestedPriceMax };
+ pendingReturn.route = decision.route;
+ pendingReturn.routeReason = decision.reason;
+ pendingReturn.estimatedRecovery = decision.estimatedRecovery;
+ pendingReturn.logisticsCost = decision.logisticsCost;
+ await pendingReturn.save();
+
+ healthCard = buildHealthCard({
+ grading,
+ finalPrice,
+ originalPrice: product.originalPrice,
+ });
+
+ // Notify nearby buyers
+ await notifyNearbyBuyers({
+ listing: {
+ _id: listing._id,
+ title: listing.title,
+ priceFinal: listing.priceFinal,
+ grade: listing.grade,
+ location: listing.location!,
+ },
+ category: product.category,
+ });
+
+ // Award credits to locker partner and update occupied count
+ await LockerModel.findByIdAndUpdate(neighbor.nearestLocker._id, { $inc: { occupied: 1 } });
+ const lockerDoc = await LockerModel.findById(neighbor.nearestLocker._id).lean();
+ if (lockerDoc?.userId) {
+ await awardCredits(lockerDoc.userId, "LOCKER_STORAGE", {
+ listingId: listing._id,
+ returnId: pendingReturn._id,
+ productId: product._id,
+ descriptionOverride: `Resell item "${product.title}" assigned to your locker`,
+ });
+ }
+ } else {
+ // No nearby locker — still mark as listed for resell (will show in shop)
+ pendingReturn.resellStatus = "LISTED_FOR_RESELL";
+ pendingReturn.aiGrade = grading.grade;
+ pendingReturn.aiSummary = grading.summary;
+ pendingReturn.defects = grading.defects;
+ pendingReturn.route = decision.route;
+ pendingReturn.routeReason = decision.reason;
+ await pendingReturn.save();
+ }
+
+ res.json({
+ ok: true,
+ message: listing
+ ? `Item listed at ${neighbor.nearestLocker?.name ?? "nearby locker"} for local resale. ${neighbor.buyersNearby.length} buyer(s) notified.`
+ : "Item graded and marked for resale. No nearby locker found — will appear in online shop.",
+ return: pendingReturn.toObject(),
+ grading,
+ decision,
+ neighbor,
+ listing: listing ? listing.toObject() : null,
+ healthCard,
+ product,
+ });
+ } catch (e) {
+ next(e);
+ }
 });
 
 // PATCH /api/returns/:id/mark-resold — Seller marks a pending resell item as resold/listed
@@ -342,8 +573,22 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  return;
  }
 
- // Get the original seller of this product
- const originalSellerId = (product as any).sellerId || null;
+ // Get the original seller of this product — try multiple sources:
+ // 1. If purchased from a listing, use listing.sellerId
+ // 2. If product has sellerId, use that
+ // 3. Fallback: look at who created the product
+ let originalSellerId = (product as any).sellerId || null;
+ if (purchasedListing && purchasedListing.sellerId) {
+ originalSellerId = purchasedListing.sellerId;
+ }
+ // If still null and we have an order, check if product has a seller
+ if (!originalSellerId && order) {
+ // Try to find the seller from any existing return or listing for this product
+ const existingListing = await ListingModel.findOne({ productId }).lean();
+ if (existingListing?.sellerId) {
+ originalSellerId = existingListing.sellerId;
+ }
+ }
 
  // Get the order item to find the price paid
  const orderItem = order ? (order.items as any[]).find((i: any) => String(i.productId) === productId) : null;
@@ -391,6 +636,16 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  sellerRefundIssued: true,
  resellStatus: "PENDING_RESELL",
  });
+
+ // Notify the original seller that they have a new item to resell
+ if (originalSellerId) {
+ await NotificationModel.create({
+ userId: originalSellerId,
+ title: "New returned item assigned to you",
+ body: `"${product.title}" was returned by a buyer and is now pending your resell decision. Go to Pending Resells to list it.`,
+ kind: "RETURN_RECEIVED",
+ }).catch(() => {}); // non-blocking
+ }
 
  // If Neighbor First — auto-create a listing at the nearby locker
  let listing = null;

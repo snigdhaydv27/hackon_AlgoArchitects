@@ -8,7 +8,7 @@ const NotificationSchema = new Schema(
  listingId: { type: Schema.Types.ObjectId, ref: "Listing" },
  kind: {
  type: String,
- enum: ["NEIGHBOR_LISTING", "SYSTEM", "PAYMENT", "PICKUP"],
+ enum: ["NEIGHBOR_LISTING", "SYSTEM", "PAYMENT", "PICKUP", "RETURN_RECEIVED"],
  default: "NEIGHBOR_LISTING",
  },
  distanceKm: { type: Number },

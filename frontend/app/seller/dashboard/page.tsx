@@ -21,9 +21,11 @@ interface Ret {
 
 export default function SellerDashboard() {
  const [list, setList] = useState<Ret[]>([]);
+ const [pendingResellCount, setPendingResellCount] = useState(0);
 
  useEffect(() => {
  api<Ret[]>("/returns").then(setList).catch(() => {});
+ api<any[]>("/returns/pending-resell").then((r) => setPendingResellCount(r.length)).catch(() => {});
  }, []);
 
  const totals = list.reduce(
@@ -40,9 +42,17 @@ export default function SellerDashboard() {
  <div className="mx-auto max-w-6xl px-4 py-10">
  <div className="flex items-center justify-between flex-wrap gap-3">
  <h1 className="text-3xl font-bold">My returns</h1>
+ <div className="flex items-center gap-3">
+ {pendingResellCount > 0 && (
+ <Link href="/seller/resells" className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium text-sm rounded-lg border border-amber-300 transition">
+ <span className="flex items-center justify-center size-5 bg-amber-500 text-white text-xs font-bold rounded-full">{pendingResellCount}</span>
+ Pending Resells
+ </Link>
+ )}
  <Link href="/seller/return/new" className="btn-primary">
  New return
  </Link>
+ </div>
  </div>
  <div className="mt-6 grid sm:grid-cols-3 gap-4">
  <Stat label="Total returns" value={list.length.toString()} />

@@ -13,11 +13,18 @@ router.get("/", async (_req, res) => {
 
 // GET /api/products/for-seller — All products + returned items pending resell for this seller
 router.get("/for-seller", requireAuth, async (req, res) => {
+ // Find products owned by this seller
+ const myProducts = await ProductModel.find({ sellerId: req.user!.id }).select("_id").lean();
+ const myProductIds = myProducts.map((p) => p._id);
+
  const [allProducts, resellReturns] = await Promise.all([
  ProductModel.find({}).lean(),
  ReturnModel.find({
- originalSellerId: req.user!.id,
  resellStatus: "PENDING_RESELL",
+ $or: [
+ { originalSellerId: req.user!.id },
+ ...(myProductIds.length > 0 ? [{ productId: { $in: myProductIds } }] : []),
+ ],
  }).populate("productId").lean(),
  ]);
 

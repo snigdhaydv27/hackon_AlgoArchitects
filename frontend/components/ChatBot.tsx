@@ -443,7 +443,7 @@ export function ChatBot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="w-[420px] max-w-[calc(100vw-2rem)] h-[620px] max-h-[calc(100vh-8rem)] bg-[#051410] border border-emerald-950/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 backdrop-blur-md"
+            className="w-[360px] max-w-[calc(100vw-2rem)] h-[480px] max-h-[calc(100vh-8rem)] bg-[#051410] border border-emerald-950/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 backdrop-blur-md"
           >
             {/* Panel Header */}
             <div className="p-4 bg-gradient-to-r from-[#030e0b] to-[#061813] border-b border-emerald-950/40 flex items-center justify-between">

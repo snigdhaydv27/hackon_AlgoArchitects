@@ -26,30 +26,38 @@ export async function saveImage(buffer: Buffer, mime: string): Promise<StoredFil
  const key = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`;
  const base64 = buffer.toString("base64");
 
- if (env.storageDriver === "s3" && env.s3Bucket) {
- await getS3().send(
- new PutObjectCommand({
- Bucket: env.s3Bucket,
- Key: key,
- Body: buffer,
- ContentType: mime,
- })
- );
- return {
- url: `https://${env.s3Bucket}.s3.${env.s3Region}.amazonaws.com/${key}`,
- key,
- mime,
- base64,
- };
+ // Use S3 in production mode when configured
+ if (env.storageDriver === "s3" && env.s3Bucket && !env.isDemo) {
+  try {
+   await getS3().send(
+    new PutObjectCommand({
+     Bucket: env.s3Bucket,
+     Key: key,
+     Body: buffer,
+     ContentType: mime,
+     ACL: "public-read",
+    })
+   );
+   return {
+    url: `https://${env.s3Bucket}.s3.${env.s3Region}.amazonaws.com/${key}`,
+    key,
+    mime,
+    base64,
+   };
+  } catch (err) {
+   // If S3 upload fails, fall back to local storage
+   console.warn("[storage] S3 upload failed, falling back to local:", (err as Error).message);
+  }
  }
 
+ // Local storage (demo mode or S3 fallback)
  await fs.mkdir(UPLOADS_DIR, { recursive: true });
  await fs.writeFile(path.join(UPLOADS_DIR, key), buffer);
  return {
- url: `${env.publicBaseUrl}/static/uploads/${key}`,
- key,
- mime,
- base64,
+  url: `/static/uploads/${key}`,
+  key,
+  mime,
+  base64,
  };
 }
 
@@ -59,4 +67,3 @@ function mimeToExt(mime: string): string {
  if (mime.includes("jpeg") || mime.includes("jpg")) return ".jpg";
  return ".bin";
 }
-

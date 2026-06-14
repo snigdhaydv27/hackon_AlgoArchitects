@@ -1,5 +1,6 @@
-import { ShieldCheck, BadgeCheck, Box } from "lucide-react";
+import { ShieldCheck, BadgeCheck, Box, Package } from "lucide-react";
 import { GradeBadge } from "./GradeBadge";
+import { ProductImage } from "./ProductImage";
 
 export interface HealthCardData {
  grade: "A" | "B" | "C" | "D";
@@ -30,8 +31,7 @@ export function HealthCard({ data, image }: { data: HealthCardData; image?: stri
 
  {image && (
  <div className="relative aspect-video bg-slate-50">
- {/* eslint-disable-next-line @next/next/no-img-element */}
- <img src={image} alt="Product" className="w-full h-full object-contain" />
+ <ProductImage src={image} alt="Product" className="w-full h-full object-contain" />
  </div>
  )}
 

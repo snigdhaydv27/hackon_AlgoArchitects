@@ -8,6 +8,7 @@ import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import { LocationSetter } from "@/components/LocationSetter";
 import { RecommendedListings } from "@/components/RecommendedListings";
+import { ProductImage } from "@/components/ProductImage";
 import { MapPin, ShieldCheck } from "lucide-react";
 
 interface Listing {
@@ -86,10 +87,7 @@ export default function NearbyListings() {
  className="card overflow-hidden hover:shadow-md hover:border-brand-300 transition"
  >
  <div className="relative aspect-video bg-slate-100">
- {l.images[0] && (
- /* eslint-disable-next-line @next/next/no-img-element */
- <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover" />
- )}
+ <ProductImage src={l.images[0]} alt={l.title} className="w-full h-full" />
  <div className="absolute top-3 left-3">
  <GradeBadge grade={l.grade} size="sm" />
  </div>

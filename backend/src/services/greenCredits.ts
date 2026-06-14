@@ -9,6 +9,7 @@ export const CREDIT_RULES: Record<CreditReason, { credits: number; label: string
  RETURN_DIVERTED: { credits: 30, label: "Gave a return a second life instead of landfill" },
  DONATION: { credits: 40, label: "Donated to an NGO instead of discarding" },
  RETURN_PREVENTED: { credits: 20, label: "Avoided a return before it happened" },
+ LOCKER_STORAGE: { credits: 25, label: "Stored and facilitated a hyperlocal return handoff" },
 };
 
 export interface AwardOptions {

@@ -5,6 +5,7 @@ import { ProductModel } from "../models/Product.js";
 import { UserModel } from "../models/User.js";
 import { ReturnModel } from "../models/Return.js";
 import { ListingModel } from "../models/Listing.js";
+import { LockerModel } from "../models/Locker.js";
 import { saveImage } from "../services/storage.js";
 import { getGrader } from "../services/ai/provider.js";
 import { decideRoute } from "../services/routing.js";
@@ -143,6 +144,20 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  },
  category: product.category,
  });
+ }
+
+ // Award credits to locker partner and update occupied count
+ if (neighbor.nearestLocker) {
+ await LockerModel.findByIdAndUpdate(neighbor.nearestLocker._id, { $inc: { occupied: 1 } });
+ const lockerDoc = await LockerModel.findById(neighbor.nearestLocker._id).lean();
+ if (lockerDoc?.userId) {
+ await awardCredits(lockerDoc.userId, "LOCKER_STORAGE", {
+ listingId: listing._id,
+ returnId: ret._id,
+ productId: product._id,
+ descriptionOverride: `Item "${product.title}" assigned to your locker for local resale`,
+ });
+ }
  }
  }
 

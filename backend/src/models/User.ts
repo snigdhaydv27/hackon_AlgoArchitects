@@ -13,7 +13,7 @@ const PointSchema = new Schema(
 const UserSchema = new Schema(
  {
  name: { type: String, required: true },
- role: { type: String, enum: ["seller", "buyer", "admin", "small_seller"], required: true },
+ role: { type: String, enum: ["seller", "buyer", "admin", "small_seller", "locker"], required: true },
  email: { type: String, sparse: true, unique: true },
  cognitoSub: { type: String, sparse: true, unique: true },
  avatar: { type: String },

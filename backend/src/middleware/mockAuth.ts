@@ -5,7 +5,7 @@ import { logger } from "../config/logger.js";
 
 export interface AuthedUser {
   id: string;
-  role: "seller" | "buyer" | "admin" | "small_seller";
+  role: "seller" | "buyer" | "admin" | "small_seller" | "locker";
   name: string;
 }
 

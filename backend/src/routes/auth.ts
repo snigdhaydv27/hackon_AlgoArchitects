@@ -40,7 +40,7 @@ router.post("/login", requireDemoMode(), async (req, res) => {
   }
   const token = signToken({
     id: String(user._id),
-    role: user.role as "seller" | "buyer" | "admin" | "small_seller",
+    role: user.role as "seller" | "buyer" | "admin" | "small_seller" | "locker",
     name: user.name,
   });
   res.json({ token, user: serializeUser(user) });
@@ -54,7 +54,7 @@ const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().min(1),
-  role: z.enum(["seller", "buyer", "small_seller"]),
+  role: z.enum(["seller", "buyer", "small_seller", "locker"]),
   address: z.string().optional(),
 });
 
@@ -165,7 +165,7 @@ router.post("/signin", validateBody(signinSchema), async (req, res, next) => {
     // Issue our own JWT (includes role, used by all other endpoints)
     const reloopToken = signToken({
       id: String(user._id),
-      role: user.role as "seller" | "buyer" | "admin" | "small_seller",
+      role: user.role as "seller" | "buyer" | "admin" | "small_seller" | "locker",
       name: user.name,
     });
 

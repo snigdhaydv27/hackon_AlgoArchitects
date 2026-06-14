@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { User, ShieldCheck, Briefcase, ShoppingBag, Mail, Lock, Loader2 } from "lucide-react";
+import { User, ShieldCheck, Briefcase, ShoppingBag, Mail, Lock, Loader2, Package } from "lucide-react";
 
 interface Persona {
   id: string;
@@ -27,7 +27,7 @@ export default function Login() {
   // Redirect already logged-in users to their home page
   useEffect(() => {
     if (!authLoading && user) {
-      const dest = user.role === "admin" ? "/admin" : user.role === "buyer" ? "/buyer/nearby" : "/seller/return/new";
+      const dest = user.role === "admin" ? "/admin" : user.role === "buyer" ? "/buyer/nearby" : user.role === "locker" ? "/locker/dashboard" : "/seller/return/new";
       router.replace(dest);
     }
   }, [user, authLoading, router]);
@@ -54,7 +54,7 @@ export default function Login() {
     setLoading(p.id);
     try {
       const u = await login(p.id);
-      const dest = u.role === "admin" ? "/admin" : u.role === "buyer" ? "/buyer/nearby" : "/seller/return/new";
+      const dest = u.role === "admin" ? "/admin" : u.role === "buyer" ? "/buyer/nearby" : u.role === "locker" ? "/locker/dashboard" : "/seller/return/new";
       router.push(dest);
     } catch (e) {
       setError(String(e));
@@ -78,7 +78,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"seller" | "buyer" | "small_seller">("seller");
+  const [role, setRole] = useState<"seller" | "buyer" | "small_seller" | "locker">("seller");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +96,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
         body: JSON.stringify({ email, password }),
       });
       loginWithToken(resp.token, resp.user);
-      const dest = resp.user.role === "admin" ? "/admin" : resp.user.role === "buyer" ? "/buyer/nearby" : "/seller/return/new";
+      const dest = resp.user.role === "admin" ? "/admin" : resp.user.role === "buyer" ? "/buyer/nearby" : resp.user.role === "locker" ? "/locker/dashboard" : "/seller/return/new";
       router.push(dest);
     } catch (e: any) {
       setError(e.message ?? String(e));
@@ -263,12 +263,12 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700">I am a...</label>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {(["seller", "buyer", "small_seller"] as const).map((r) => (
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {(["seller", "buyer", "small_seller", "locker"] as const).map((r) => (
                 <button key={r} type="button" onClick={() => setRole(r)}
                   className={"rounded-lg border px-3 py-2 text-sm transition " +
                     (role === r ? "border-brand-500 bg-brand-50 text-brand-700 font-semibold" : "border-slate-300 text-slate-600")}>
-                  {r === "small_seller" ? "Seller (biz)" : r === "seller" ? "Seller" : "Buyer"}
+                  {r === "small_seller" ? "Seller (biz)" : r === "seller" ? "Seller" : r === "locker" ? "Locker" : "Buyer"}
                 </button>
               ))}
             </div>
@@ -361,7 +361,7 @@ function PersonaPicker({ list, loading, error, onPick }: {
 }) {
   const grouped: Record<string, Persona[]> = {};
   for (const p of list) (grouped[p.role] ??= []).push(p);
-  const order = ["seller", "small_seller", "buyer", "admin"];
+  const order = ["seller", "small_seller", "buyer", "locker", "admin"];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12">
@@ -405,11 +405,13 @@ function iconFor(role: string) {
   if (role === "admin") return <ShieldCheck className="size-5" />;
   if (role === "buyer") return <ShoppingBag className="size-5" />;
   if (role === "small_seller") return <Briefcase className="size-5" />;
+  if (role === "locker") return <Package className="size-5" />;
   return <User className="size-5" />;
 }
 function labelFor(role: string) {
   if (role === "small_seller") return "Small Seller";
   if (role === "seller") return "Sellers (consumers)";
   if (role === "buyer") return "Verified Buyers";
+  if (role === "locker") return "Locker Partners";
   return "Admin";
 }

@@ -6,7 +6,7 @@ import { api } from "./api";
 export interface AuthUser {
   id: string;
   name: string;
-  role: "seller" | "buyer" | "admin" | "small_seller";
+  role: "seller" | "buyer" | "admin" | "small_seller" | "locker";
   avatar?: string;
   address?: string;
   location?: { type: "Point"; coordinates: [number, number] };

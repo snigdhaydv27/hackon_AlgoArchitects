@@ -14,6 +14,7 @@ const LockerSchema = new Schema(
  occupied: { type: Number, default: 0 },
  hours: { type: String, default: "8 AM – 10 PM" },
  contact: { type: String },
+ userId: { type: Schema.Types.ObjectId, ref: "User" }, // linked locker partner user
  },
  { timestamps: true }
 );

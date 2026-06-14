@@ -6,6 +6,7 @@ export const CREDIT_REASONS = [
  "RETURN_DIVERTED", // seller's return routed to resale/refurbish instead of landfill
  "DONATION", // item donated to an NGO instead of discarded
  "RETURN_PREVENTED", // buyer heeded a prevention warning — return never happened
+ "LOCKER_STORAGE", // locker partner stored and facilitated a return handoff
 ] as const;
 
 export type CreditReason = (typeof CREDIT_REASONS)[number];

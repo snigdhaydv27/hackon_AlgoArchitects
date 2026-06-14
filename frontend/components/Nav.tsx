@@ -12,7 +12,7 @@ import { BarChart3, Map, ShoppingBag, Package, Sparkles } from "lucide-react";
 export function Nav() {
   const { user, logout } = useAuth();
   const links = navLinks(user?.role);
-  const showInbox = user?.role === "buyer" || user?.role === "seller" || user?.role === "small_seller";
+  const showInbox = user?.role === "buyer" || user?.role === "seller" || user?.role === "small_seller" || user?.role === "locker";
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -293,6 +293,28 @@ export function Nav() {
                       </Link>
                     </li>
                   )}
+                  {user?.role === "locker" && (
+                    <>
+                      <li>
+                        <Link
+                          href="/locker/dashboard"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          📦 My Locker Dashboard
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/locker/assignments"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          📋 Assigned Items
+                        </Link>
+                      </li>
+                    </>
+                  )}
                   {user?.role === "buyer" && (
                     <li>
                       <Link
@@ -528,6 +550,12 @@ function navLinks(role?: string) {
       { href: "/buyer/nearby", label: "Nearby", icon: Map },
       { href: "/buyer/recommended", label: "For You", icon: Sparkles },
       { href: "/shop", label: "Shop", icon: ShoppingBag },
+    ];
+  }
+  if (role === "locker") {
+    return [
+      { href: "/locker/dashboard", label: "My Locker", icon: Package },
+      { href: "/locker/assignments", label: "Assignments", icon: BarChart3 },
     ];
   }
   return [

@@ -235,6 +235,17 @@ name: "Arjun Reddy",
  location: { type: "Point", coordinates: COORDS.indiranagar },
  verified: true,
  },
+ {
+ name: "Sharma Ji (Locker Partner)",
+ role: "locker",
+ email: "sharma@demo.reloop.in",
+ avatar: "/avatars/sharma.png",
+ tagline: "Kirana store owner — ReLoop locker partner in Koramangala",
+ address: "5th Block, Koramangala, Bangalore",
+ location: { type: "Point", coordinates: COORDS.koramangala },
+ verified: true,
+ greenCredits: 150,
+ },
  ];
  return UserModel.insertMany(users);
 }
@@ -601,6 +612,13 @@ async function main() {
  const small = users.find((u) => u.role === "small_seller")!;
  const sellers = users.filter((u) => u.role === "seller" || u.role === "small_seller");
  const buyers = users.filter((u) => u.role === "buyer");
+ const lockerPartner = users.find((u) => u.role === "locker")!;
+
+ // Link the first locker (Sharma Kirana) to the locker partner user
+ if (lockerPartner && lockers.length > 0) {
+ await LockerModel.findByIdAndUpdate(lockers[0]._id, { userId: lockerPartner._id });
+ console.log(`[seed] linked locker "${lockers[0].name}" to user "${lockerPartner.name}"`);
+ }
 
  console.log("[seed] seeding demo activity + LIVE listings...");
  await seedDemoActivity({

@@ -318,22 +318,62 @@ export function Nav() {
                 </ul>
               </div>
 
-              {/* General Help & Support */}
+              {/* Account & Settings */}
               {user?.role !== "admin" && (
               <div>
                 <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 font-mono">
-                  Help & Settings
+                  Account & Settings
                 </h4>
                 <ul className="space-y-3.5 text-xs text-slate-600 font-medium">
                   <li>
                     <Link
-                      href="/"
+                      href="/account/profile"
                       onClick={() => setSidebarOpen(false)}
                       className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
                     >
-                      👤 Your Profile Settings
+                      🔒 Login & Security
                     </Link>
                   </li>
+                  <li>
+                    <Link
+                      href="/account/addresses"
+                      onClick={() => setSidebarOpen(false)}
+                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                    >
+                      📍 Your Addresses
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href={user?.role === "seller" || user?.role === "small_seller" ? "/seller/payment-settings" : "/account/profile"}
+                      onClick={() => setSidebarOpen(false)}
+                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                    >
+                      💳 Payment Options
+                    </Link>
+                  </li>
+                  {user?.role === "buyer" && (
+                    <>
+                      <li>
+                        <Link
+                          href="/cart"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          📦 Your Orders & Returns
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/credits"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          🌿 ReLoop Cash/Credits
+                        </Link>
+                      </li>
+                    </>
+                  )}
                   <li>
                     <Link
                       href="/help"

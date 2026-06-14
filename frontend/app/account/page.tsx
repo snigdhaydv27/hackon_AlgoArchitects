@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Package, ShieldAlert, MapPin, CreditCard, Gift, UserRound } from "lucide-react";
+import { Package, ShieldAlert, MapPin, CreditCard, Gift } from "lucide-react";
 
 export default function AccountPage() {
   const { user, loading } = useAuth();
@@ -18,44 +18,47 @@ export default function AccountPage() {
 
   if (loading || !user) return <div className="p-8 text-center">Loading...</div>;
 
+  const isSeller = user.role === "seller" || user.role === "small_seller";
+
   const cards = [
-    {
-      title: "Your Orders & Returns",
-      description: "Track, return, or buy things again",
-      icon: <Package className="size-8 text-[#008296] stroke-[1.5]" />,
-      href: "/",
-    },
+    // Seller only sees these 3
     {
       title: "Login & security",
       description: "Edit login, name, avatar, and tagline",
       icon: <ShieldAlert className="size-8 text-[#008296] stroke-[1.5]" />,
       href: "/account/profile",
+      show: true,
     },
     {
       title: "Your Addresses",
       description: "Edit addresses and delivery preferences",
       icon: <MapPin className="size-8 text-[#008296] stroke-[1.5]" />,
-      href: "/account/profile", // we'll put it all in profile for now or could be a separate page
+      href: "/account/addresses",
+      show: true,
     },
     {
       title: "Payment options",
       description: "Edit or add payment methods and Razorpay config",
       icon: <CreditCard className="size-8 text-[#008296] stroke-[1.5]" />,
-      href: "/",
+      href: isSeller ? "/seller/payment-settings" : "/account/profile",
+      show: true,
+    },
+    // Buyer-only sections
+    {
+      title: "Your Orders & Returns",
+      description: "Track, return, or buy things again",
+      icon: <Package className="size-8 text-[#008296] stroke-[1.5]" />,
+      href: "/cart/orders",
+      show: !isSeller,
     },
     {
       title: "ReLoop Cash/Credits",
       description: "View your balance and transaction history",
       icon: <Gift className="size-8 text-[#008296] stroke-[1.5]" />,
       href: "/credits",
+      show: !isSeller,
     },
-    {
-      title: "Your Public Profile",
-      description: "See how others view your seller/buyer profile",
-      icon: <UserRound className="size-8 text-[#008296] stroke-[1.5]" />,
-      href: `/profile/${user.id}`,
-    },
-  ];
+  ].filter((c) => c.show);
 
   return (
     <div className="bg-white min-h-screen font-sans text-[#0F1111]">

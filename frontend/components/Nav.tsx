@@ -7,7 +7,7 @@ import { useCart } from "@/lib/cart";
 import { api } from "@/lib/api";
 import { Recycle, LogOut, MapPin, ChevronDown, User, X, Crosshair, Loader2, Leaf } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
-import { BarChart3, Map, ShoppingBag, Package, Sparkles, RotateCcw } from "lucide-react";
+import { BarChart3, Map, ShoppingBag, Package, Sparkles, RotateCcw, ChevronRight } from "lucide-react";
 
 export function Nav() {
   const { user, logout } = useAuth();
@@ -166,282 +166,168 @@ export function Nav() {
           />
 
           {/* Sidebar Drawer panel */}
-          <div className="fixed inset-y-0 left-0 w-80 bg-white z-50 text-slate-800 shadow-2xl flex flex-col animate-slide-in-left duration-300 font-sans">
+          <div className="fixed inset-y-0 left-0 w-[365px] bg-white z-50 text-[#111] shadow-2xl flex flex-col animate-slide-in-left duration-300 font-sans">
             {/* Drawer Header (Sign In info) */}
-            <div className="bg-[#232f3e] text-white py-3.5 px-6 flex items-center gap-3">
-              <div className="w-7 h-7 rounded-full bg-slate-200/25 flex items-center justify-center">
-                <User className="size-4 text-white" />
+            <div className="bg-[#232f3e] text-white py-3.5 px-9 flex items-center gap-3">
+              <div className="flex items-center justify-center">
+                <User className="size-7 text-white" />
               </div>
-              <div className="text-sm font-bold truncate flex-1">
-                Hello, {user ? user.name : "Sign In"}
+              <div className="text-[19px] font-bold truncate flex-1">
+                Hello, {user ? user.name : "sign in"}
               </div>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"
               >
-                <X className="size-5" />
+                <X className="size-6 -mr-4" />
               </button>
             </div>
 
             {/* Scrollable Links Content */}
-            <div className="flex-1 overflow-y-auto py-6 px-6 space-y-6">
-              {/* Profile Portal Section */}
-              <div>
-                <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 font-mono">
-                  Your Account Portals
-                </h4>
-                <div className="space-y-3.5 text-xs text-slate-600 font-medium">
-                  {user ? (
-                    <>
-                      <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black leading-none">Logged In</p>
-                        <p className="text-slate-800 font-black mt-1 leading-none">{user.name}</p>
-                        <p className="text-slate-500 text-xxs mt-1.5 leading-none">Role: {user.role}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <Link
-                      href="/login"
-                      onClick={() => setSidebarOpen(false)}
-                      className="block p-3 border border-dashed border-[#ff9900] bg-orange-50 hover:bg-orange-100 rounded-lg text-center font-bold text-[#b12704] transition-all"
-                    >
-                      🔒 Access Login Center
-                    </Link>
-                  )}
+            <div className="flex-1 overflow-y-auto pb-6">
+              
+              {!user && (
+                <div className="py-2 border-b border-[#d5d9d9]">
+                  <ul className="text-[14px] text-[#111]">
+                    <li>
+                      <Link
+                        href="/login"
+                        onClick={() => setSidebarOpen(false)}
+                        className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors"
+                      >
+                        Sign in
+                        <ChevronRight className="size-4 text-[#888]" />
+                      </Link>
+                    </li>
+                  </ul>
                 </div>
-              </div>
+              )}
 
               {/* Departments Section */}
               {user?.role !== "admin" && (
-              <div>
-                <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 font-mono">
-                  Reloop Departments
-                </h4>
-                <ul className="space-y-3.5 text-xs text-slate-600 font-medium">
-                  {user?.role === "buyer" && (
+                <div className="py-2 border-b border-[#d5d9d9]">
+                  <h4 className="text-[18px] font-bold text-[#111] px-9 py-2 mt-2">
+                    Digital Content and Devices
+                  </h4>
+                  <ul className="text-[14px] text-[#111]">
+                    {user?.role === "buyer" && (
+                      <li>
+                        <Link href="/shop" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Certified Refurbished Shop
+                          <ChevronRight className="size-4 text-[#888]" />
+                        </Link>
+                      </li>
+                    )}
                     <li>
-                      <Link
-                        href="/shop"
-                        onClick={() => setSidebarOpen(false)}
-                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                      >
-                        🛒 Certified Refurbished Shop
+                      <Link href="/sustainability" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                        Sustainability & Eco Impact
+                        <ChevronRight className="size-4 text-[#888]" />
                       </Link>
                     </li>
-                  )}
-                  <li>
-                    <Link
-                      href="/sustainability"
-                      onClick={() => setSidebarOpen(false)}
-                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                    >
-                      🌿 Sustainability & Eco Impact
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/hyperlocal"
-                      onClick={() => setSidebarOpen(false)}
-                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                    >
-                      📦 Hyperlocal Locker Network
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+                    <li>
+                      <Link href="/hyperlocal" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                        Hyperlocal Locker Network
+                        <ChevronRight className="size-4 text-[#888]" />
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               )}
 
               {/* Returns Operations Section */}
-              <div>
-                <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 font-mono">
-                  {user?.role === "admin" ? "Admin" : "Circular Utilities"}
+              <div className="py-2 border-b border-[#d5d9d9]">
+                <h4 className="text-[18px] font-bold text-[#111] px-9 py-2 mt-2">
+                  {user?.role === "admin" ? "Admin" : "Shop by Category"}
                 </h4>
-                <ul className="space-y-3.5 text-xs text-slate-600 font-medium">
+                <ul className="text-[14px] text-[#111]">
                   {(user?.role === "seller" || user?.role === "small_seller") && (
                     <>
                       <li>
-                        <Link
-                          href="/seller/return/new"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          📥 Create New Return
+                        <Link href="/seller/return/new" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Create New Return <ChevronRight className="size-4 text-[#888]" />
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/seller/dashboard"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          📊 Seller Return Console
+                        <Link href="/seller/dashboard" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Seller Return Console <ChevronRight className="size-4 text-[#888]" />
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/seller/resells"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          🔄 Pending Resells
+                        <Link href="/seller/resells" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Pending Resells <ChevronRight className="size-4 text-[#888]" />
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/seller/payment-settings"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          💳 Payment Settings
+                        <Link href="/seller/payment-settings" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Payment Settings <ChevronRight className="size-4 text-[#888]" />
                         </Link>
                       </li>
                     </>
                   )}
                   {user?.role === "admin" && (
                     <li>
-                      <Link
-                        href="/admin"
-                        onClick={() => setSidebarOpen(false)}
-                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                      >
-                        💼 Admin Operations Center
+                      <Link href="/admin" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                        Admin Operations Center <ChevronRight className="size-4 text-[#888]" />
                       </Link>
                     </li>
                   )}
                   {user?.role === "locker" && (
                     <>
                       <li>
-                        <Link
-                          href="/locker/dashboard"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          📦 My Locker Dashboard
+                        <Link href="/locker/dashboard" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          My Locker Dashboard <ChevronRight className="size-4 text-[#888]" />
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          href="/locker/assignments"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          📋 Assigned Items
+                        <Link href="/locker/assignments" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Assigned Items <ChevronRight className="size-4 text-[#888]" />
                         </Link>
                       </li>
                     </>
                   )}
                   {user?.role === "buyer" && (
-                    <li>
-                      <Link
-                        href="/buyer/orders"
-                        onClick={() => setSidebarOpen(false)}
-                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                      >
-                        🛍️ My Orders & Returns
-                      </Link>
-                    </li>
-                  )}
-                  {user?.role === "buyer" && (
-                    <li>
-                      <Link
-                        href="/buyer/nearby"
-                        onClick={() => setSidebarOpen(false)}
-                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                      >
-                        🗺️ Nearby Listings
-                      </Link>
-                    </li>
-                  )}
-                  {user?.role === "buyer" && (
-                    <li>
-                      <Link
-                        href="/buyer/recommended"
-                        onClick={() => setSidebarOpen(false)}
-                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                      >
-                        ✨ Recommended for You
-                      </Link>
-                    </li>
+                    <>
+                      <li>
+                        <Link href="/buyer/orders" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          My Orders & Returns <ChevronRight className="size-4 text-[#888]" />
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/buyer/nearby" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Nearby Listings <ChevronRight className="size-4 text-[#888]" />
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/buyer/recommended" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                          Recommended for You <ChevronRight className="size-4 text-[#888]" />
+                        </Link>
+                      </li>
+                    </>
                   )}
                 </ul>
               </div>
 
               {/* Account & Settings */}
               {user?.role !== "admin" && (
-              <div>
-                <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3 font-mono">
-                  Account & Settings
-                </h4>
-                <ul className="space-y-3.5 text-xs text-slate-600 font-medium">
-                  <li>
-                    <Link
-                      href="/account/profile"
-                      onClick={() => setSidebarOpen(false)}
-                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                    >
-                      🔒 Login & Security
-                    </Link>
-                  </li>
-                  {user?.role !== "locker" && (
-                    <>
-                      <li>
-                        <Link
-                          href="/account/addresses"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          📍 Your Addresses
-                        </Link>
-                      </li>
-
-                    </>
-                  )}
-                  {user?.role === "buyer" && (
-                    <>
-                      <li>
-                        <Link
-                          href="/orders"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          📦 Your Orders & Returns
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/credits"
-                          onClick={() => setSidebarOpen(false)}
-                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                        >
-                          🌿 ReLoop Cash/Credits
-                        </Link>
-                      </li>
-                    </>
-                  )}
-                  <li>
-                    <Link
-                      href="/help"
-                      onClick={() => setSidebarOpen(false)}
-                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                    >
-                      💬 Help & Customer Service
-                    </Link>
-                  </li>
-                  {user && (
+                <div className="py-2 border-b border-[#d5d9d9]">
+                  <h4 className="text-[18px] font-bold text-[#111] px-9 py-2 mt-2">
+                    Help & Settings
+                  </h4>
+                  <ul className="text-[14px] text-[#111]">
                     <li>
-                      <button
-                        onClick={() => {
-                          setSidebarOpen(false);
-                          logout();
-                        }}
-                        className="w-full text-left text-rose-600 hover:text-rose-700 font-bold flex items-center gap-2 hover:bg-slate-50 p-1 rounded cursor-pointer bg-transparent border-none outline-none"
-                      >
-                        🚪 Sign Out of ReLoop
-                      </button>
+                      <Link href="/account" onClick={() => setSidebarOpen(false)} className="flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors">
+                        Your Account
+                      </Link>
                     </li>
-                  )}
-                </ul>
-              </div>
+                    {user && (
+                      <li>
+                        <button onClick={() => { setSidebarOpen(false); logout(); }} className="w-full text-left flex justify-between items-center px-9 py-3 hover:bg-[#eaeded] transition-colors bg-transparent border-none outline-none cursor-pointer">
+                          Sign Out
+                        </button>
+                      </li>
+                    )}
+                  </ul>
+                </div>
               )}
             </div>
           </div>

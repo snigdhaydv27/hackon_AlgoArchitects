@@ -78,8 +78,8 @@ export default function Home() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/login" className="bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] text-[#0F1111] font-semibold text-lg px-8 py-3 rounded-full flex items-center justify-center transition-colors">
-              Try the Interactive Demo
-              <ArrowRight className="size-5 ml-2" />
+              Get Started
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
 
           </div>

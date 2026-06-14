@@ -4,43 +4,52 @@
 
 :root {
   color-scheme: light;
-  --bg-gradient-start: #f8fafc;
-  --bg-gradient-end: #e2e8f0;
 }
 html, body {
-  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  background-color: #EAEDED;
   color: #0f1111;
   scroll-behavior: smooth;
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm transition-all shadow-sm rounded-lg border font-medium cursor-pointer select-none active:scale-95;
+    @apply inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm transition-colors rounded-[8px] border font-medium cursor-pointer select-none;
   }
   .btn-primary {
-    @apply btn bg-[#FFD814] text-[#0F1111] border-transparent hover:bg-[#F7CA00] shadow-md shadow-amber-500/20;
+    @apply btn bg-[#FFD814] text-[#0F1111] border-[#FCD200] hover:bg-[#F7CA00] shadow-[0_1px_2px_rgba(0,0,0,0.05)];
   }
   .btn-secondary {
-    @apply btn bg-white/80 backdrop-blur-md text-slate-800 border-slate-200/50 hover:bg-white/90 hover:shadow-sm;
+    @apply btn bg-[#FFFFFF] text-[#0F1111] border-[#D5D9D9] hover:bg-[#F8F9FA] shadow-[0_1px_2px_rgba(0,0,0,0.05)];
   }
   .btn-ghost {
-    @apply btn bg-transparent text-slate-700 border-transparent hover:bg-slate-100 shadow-none;
+    @apply btn bg-transparent text-slate-700 border-transparent hover:bg-[#F3F3F3] shadow-none;
   }
   .card {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm p-6;
+    @apply bg-white border border-[#D5D9D9] rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6;
   }
   .glass-card {
-    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl shadow-slate-200/50 rounded-2xl;
+    @apply bg-white border border-[#D5D9D9] rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300;
   }
   .pill {
     @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold tracking-wide;
   }
   .gradient-bg {
-    background: radial-gradient(circle at top right, rgba(16,185,129,0.1) 0%, transparent 40%),
-                radial-gradient(circle at bottom left, rgba(59,130,246,0.05) 0%, transparent 40%);
+    @apply bg-[#FFFFFF];
   }
   .link-teal {
-    @apply text-emerald-600 hover:text-emerald-500 hover:underline cursor-pointer transition-colors;
+    @apply text-[#007185] hover:text-[#C45500] hover:underline cursor-pointer transition-colors;
+  }
+  .amazon-table {
+    @apply w-full text-left text-sm text-[#0F1111] border-collapse bg-white border border-[#D5D9D9] rounded-md overflow-hidden;
+  }
+  .amazon-table th {
+    @apply bg-[#F3F3F3] font-bold py-3 px-4 border-b border-[#D5D9D9];
+  }
+  .amazon-table td {
+    @apply py-3 px-4 border-b border-[#D5D9D9];
+  }
+  .amazon-table tr:last-child td {
+    @apply border-b-0;
   }
 }
 

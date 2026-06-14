@@ -72,12 +72,12 @@ export function Nav() {
             {/* Sign In & Account Links */}
             {user ? (
               <div className="flex items-center gap-2">
-                <div className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded select-none cursor-pointer leading-none">
+                <Link href="/account" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded select-none cursor-pointer leading-none">
                   <span className="text-[#ccc] text-[10px]">Hello, {user.name}</span>
                   <span className="font-bold text-white flex items-center gap-0.5 mt-0.5">
                     {user.role} <ChevronDown className="size-3 text-[#ccc]" />
                   </span>
-                </div>
+                </Link>
               </div>
             ) : (
               <Link href="/login" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">

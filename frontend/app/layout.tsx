@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "ReLoop — Every return finds its next best owner",
   description:
     "AI-powered circular commerce. Grade, route, and re-home long-tail returns hyperlocally.",
+  icons: {
+    icon: "/favicon.ico?v=2",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

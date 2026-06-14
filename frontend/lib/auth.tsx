@@ -7,7 +7,9 @@ export interface AuthUser {
   id: string;
   name: string;
   role: "seller" | "buyer" | "admin" | "small_seller" | "locker";
-  avatar?: string;
+  age?: number;
+  gender?: string;
+  mobile?: string;
   address?: string;
   location?: { type: "Point"; coordinates: [number, number] };
   profile?: { footLengthMm?: number; preferredSize?: string; brand?: string };

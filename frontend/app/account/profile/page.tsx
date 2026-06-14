@@ -28,9 +28,9 @@ export default function ProfileSettingsPage() {
       router.push("/login");
     } else if (user) {
       setName(user.name || "");
-      setAge((user as any).age || "");
-      setGender((user as any).gender || "");
-      setMobile((user as any).mobile || "");
+      setAge(user.age?.toString() || "");
+      setGender(user.gender || "");
+      setMobile(user.mobile || "");
       setPassword("********");
     }
   }, [user, loading, router]);
@@ -43,15 +43,22 @@ export default function ProfileSettingsPage() {
     setSuccess(false);
 
     try {
-      if (field === "name") {
+      let payload = {};
+      if (field === "name") payload = { name };
+      if (field === "age") payload = { age: parseInt(age) || undefined };
+      if (field === "gender") payload = { gender };
+      if (field === "mobile") payload = { mobile };
+
+      if (field !== "password") {
         await api("/auth/me/profile", {
           method: "PUT",
-          body: JSON.stringify({ name }),
+          body: JSON.stringify(payload),
         });
-        setTimeout(() => window.location.reload(), 1500);
       }
+
       setSuccess(true);
       setEditMode(null);
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err: any) {
       setError(err.message || "Failed to update profile");
     } finally {
@@ -141,7 +148,7 @@ export default function ProfileSettingsPage() {
             <div className="p-4 border-b border-[#D5D9D9] flex justify-between items-center hover:bg-slate-50 transition-colors">
               <div>
                 <p className="font-bold text-sm">Primary mobile no.</p>
-                <p className="text-sm text-[#565959]">{(user as any).mobile || "Not set"}</p>
+                <p className="text-sm text-[#565959]">{user.mobile || "Not set"}</p>
               </div>
               <button onClick={() => setEditMode("mobile")} className="border border-[#D5D9D9] px-6 py-1.5 rounded-lg shadow-sm bg-white hover:bg-slate-50 text-sm font-semibold">
                 Edit
@@ -171,7 +178,7 @@ export default function ProfileSettingsPage() {
             <div className="p-4 border-b border-[#D5D9D9] flex justify-between items-center hover:bg-slate-50 transition-colors">
               <div>
                 <p className="font-bold text-sm">Age</p>
-                <p className="text-sm text-[#565959]">{(user as any).age || "Not set"}</p>
+                <p className="text-sm text-[#565959]">{user.age || "Not set"}</p>
               </div>
               <button onClick={() => setEditMode("age")} className="border border-[#D5D9D9] px-6 py-1.5 rounded-lg shadow-sm bg-white hover:bg-slate-50 text-sm font-semibold">
                 Edit
@@ -206,7 +213,7 @@ export default function ProfileSettingsPage() {
             <div className="p-4 border-b border-[#D5D9D9] flex justify-between items-center hover:bg-slate-50 transition-colors">
               <div>
                 <p className="font-bold text-sm">Gender</p>
-                <p className="text-sm text-[#565959]">{(user as any).gender || "Not set"}</p>
+                <p className="text-sm text-[#565959]">{user.gender || "Not set"}</p>
               </div>
               <button onClick={() => setEditMode("gender")} className="border border-[#D5D9D9] px-6 py-1.5 rounded-lg shadow-sm bg-white hover:bg-slate-50 text-sm font-semibold">
                 Edit

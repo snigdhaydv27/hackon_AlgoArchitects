@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { RoleGuard } from "@/components/RoleGuard";
 import { HealthCard, type HealthCardData } from "@/components/HealthCard";
 import { RazorpayButton } from "@/components/RazorpayButton";
+import { PayAtPickup } from "@/components/PayAtPickup";
 import { MapPin, CheckCircle2, Loader2, QrCode } from "lucide-react";
 
 interface ListingResp {
@@ -39,10 +40,15 @@ export default function Reserve() {
   const [data, setData] = useState<ListingResp | null>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [paymentInfo, setPaymentInfo] = useState<{ hasRazorpay: boolean; payAtPickupAvailable: boolean } | null>(null);
 
   useEffect(() => {
     if (!params.id) return;
     api<ListingResp>(`/listings/${params.id}`).then(setData).catch((e) => setError(String(e)));
+    // Check payment availability for this listing
+    api<{ hasRazorpay: boolean; payAtPickupAvailable: boolean }>(`/payment/status/${params.id}`)
+      .then(setPaymentInfo)
+      .catch(() => setPaymentInfo({ hasRazorpay: false, payAtPickupAvailable: true }));
   }, [params.id]);
 
   async function action(verb: "reserve" | "pickup") {
@@ -97,16 +103,19 @@ export default function Reserve() {
             <div className="font-medium">{listing.lockerId?.name}</div>
             <div className="text-sm text-slate-600">{listing.lockerId?.address}</div>
             <div className="text-xs text-slate-500 mt-1">
-              {listing.lockerId?.partnerType} · open {listing.lockerId?.hours ?? "8 AM – 10 PM"}
+              Self-service smart locker · open {listing.lockerId?.hours ?? "24/7"}
             </div>
           </div>
         </div>
 
         <div className="card p-5">
-          <div className="text-xs uppercase text-slate-500">Listing status</div>
-          <div className="text-2xl font-bold text-slate-900">{status}</div>
+          <div className="text-xs uppercase text-slate-500">Order status</div>
+          <div className="text-2xl font-bold text-slate-900">{statusLabel(status)}</div>
           <p className="text-sm text-slate-600 mt-1">
-            Amazon holds your payment until pickup is confirmed at the locker.
+            {status === "LIVE" && "This item is available. Reserve it to hold it for you."}
+            {status === "RESERVED" && "Item is reserved for you. Complete payment to proceed."}
+            {status === "PAID" && "Payment confirmed. Visit the locker and enter your pickup code to unlock and collect your item."}
+            {status === "COMPLETE" && "You've picked up this item. Enjoy!"}
           </p>
           {error && (
             <div className="mt-3 rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700">
@@ -114,46 +123,88 @@ export default function Reserve() {
             </div>
           )}
           <div className="mt-4 grid gap-3">
-            <Step
-              label="Reserve item"
+            {/* Step 1: Reserve */}
+            <StepIndicator
+              label="1. Reserve item"
               done={status !== "LIVE"}
               active={status === "LIVE"}
-              onClick={() => action("reserve")}
-              loading={working === "reserve"}
             />
+            {status === "LIVE" && (
+              <button
+                onClick={() => action("reserve")}
+                disabled={working === "reserve"}
+                className="btn-primary w-full justify-start text-sm"
+              >
+                {working === "reserve" ? <Loader2 className="size-4 animate-spin" /> : null}
+                Reserve this item
+              </button>
+            )}
 
+            {/* Step 2: Pay */}
+            <StepIndicator
+              label="2. Pay"
+              done={status === "PAID" || status === "COMPLETE"}
+              active={status === "RESERVED" || status === "DROPPED"}
+            />
             {(status === "RESERVED" || status === "DROPPED") && user && (
-              <RazorpayButton
-                listingId={listing._id}
-                amountInr={listing.priceFinal}
-                buyerName={user.name}
-                onPaid={onPaid}
-              />
+              <>
+                {paymentInfo?.hasRazorpay ? (
+                  <RazorpayButton
+                    listingId={listing._id}
+                    amountInr={listing.priceFinal}
+                    buyerName={user.name}
+                    onPaid={onPaid}
+                  />
+                ) : (
+                  <PayAtPickup
+                    listingId={listing._id}
+                    amountInr={listing.priceFinal}
+                    lockerName={listing.lockerId?.name}
+                    onPaid={onPaid}
+                  />
+                )}
+              </>
             )}
 
-            {(status === "PAID" || status === "COMPLETE") && (
-              <div className="flex items-center gap-2 text-emerald-700">
-                <CheckCircle2 className="size-4" />
-                <span className="text-sm">Payment received</span>
-              </div>
-            )}
-
-            <Step
-              label="Pick up at locker"
+            {/* Step 3: Pick up */}
+            <StepIndicator
+              label="3. Pick up from locker"
               done={status === "COMPLETE"}
               active={status === "PAID"}
-              onClick={() => action("pickup")}
-              loading={working === "pickup"}
             />
+            {status === "PAID" && (
+              <div className="space-y-3">
+                <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+                  <p className="font-medium">Collect your item from the smart locker:</p>
+                  <ul className="mt-2 space-y-1 text-xs">
+                    <li>📍 Go to <strong>{listing.lockerId?.name}</strong> ({listing.lockerId?.address})</li>
+                    <li>🔑 Enter your pickup code on the locker screen to unlock</li>
+                    <li>📦 Take your item and confirm collection below</li>
+                  </ul>
+                </div>
+                <button
+                  onClick={() => action("pickup")}
+                  disabled={working === "pickup"}
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition disabled:opacity-50"
+                >
+                  {working === "pickup" ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                  I&apos;ve collected my item
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
+        {/* QR Code section — shown after reservation */}
         {status !== "LIVE" && (
           <div className="card p-5">
             <div className="font-semibold text-slate-900 flex items-center gap-2">
               <QrCode className="size-4 text-brand-600" />
-              Your pickup QR
+              Your pickup code
             </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Enter this code on the locker screen at {listing.lockerId?.name} to unlock and collect your item.
+            </p>
             <div className="mt-3 flex items-center gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -166,7 +217,9 @@ export default function Reserve() {
                 <div className="text-2xl font-bold tracking-wider text-slate-900">
                   {listing.pickupCode}
                 </div>
-                <div className="text-xs text-slate-500 mt-1">Show at the locker partner.</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Enter this on the locker screen to unlock your compartment.
+                </div>
               </div>
             </div>
           </div>
@@ -179,11 +232,11 @@ export default function Reserve() {
               Pickup complete
             </div>
             <p className="text-sm text-emerald-700 mt-1">
-              Seller has been refunded fully. Amazon recovered ₹{listing.priceFinal} that would
-              have been ₹0 in the old liquidation flow.
+              Item collected successfully. The seller has been paid ₹{listing.priceFinal}.
+              This item was saved from landfill and found its next best owner — you!
             </p>
             <button onClick={() => router.push("/buyer/nearby")} className="btn-secondary mt-4 text-sm">
-              Browse more
+              Browse more items
             </button>
           </div>
         )}
@@ -193,39 +246,47 @@ export default function Reserve() {
   );
 }
 
-function Step({
+function statusLabel(status: string): string {
+  switch (status) {
+    case "LIVE": return "Available";
+    case "RESERVED": return "Reserved for you";
+    case "DROPPED": return "Ready for payment";
+    case "PAID": return "Paid — Ready for pickup";
+    case "COMPLETE": return "Picked up ✓";
+    default: return status;
+  }
+}
+
+function StepIndicator({
   label,
   done,
   active,
-  onClick,
-  loading,
 }: {
   label: string;
   done: boolean;
   active: boolean;
-  onClick: () => void;
-  loading: boolean;
 }) {
   if (done) {
     return (
       <div className="flex items-center gap-2 text-emerald-700">
         <CheckCircle2 className="size-4" />
-        <span className="text-sm">{label}</span>
+        <span className="text-sm font-medium">{label}</span>
       </div>
     );
   }
-  if (!active) {
+  if (active) {
     return (
-      <div className="flex items-center gap-2 text-slate-400">
-        <span className="size-4 rounded-full border border-slate-300" />
-        <span className="text-sm">{label}</span>
+      <div className="flex items-center gap-2 text-slate-900">
+        <span className="size-4 rounded-full bg-brand-500 border-2 border-brand-300 animate-pulse" />
+        <span className="text-sm font-medium">{label}</span>
       </div>
     );
   }
   return (
-    <button onClick={onClick} disabled={loading} className="btn-primary w-full justify-start text-sm">
-      {loading ? <Loader2 className="size-4 animate-spin" /> : null}
-      {label}
-    </button>
+    <div className="flex items-center gap-2 text-slate-400">
+      <span className="size-4 rounded-full border border-slate-300" />
+      <span className="text-sm">{label}</span>
+    </div>
   );
 }
+

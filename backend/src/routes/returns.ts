@@ -63,9 +63,21 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  }
  );
 
+ // Determine location for neighbor matching:
+ // If this is a resell (returnId provided), use the BUYER's location from the original return
+ // Otherwise use the seller's own location
+ const { returnId } = req.body;
+ let matchCoords = seller.location!.coordinates as [number, number];
+ if (returnId) {
+ const originalReturn = await ReturnModel.findById(returnId).lean();
+ if (originalReturn?.sellerLocation?.coordinates) {
+ matchCoords = originalReturn.sellerLocation.coordinates as [number, number];
+ }
+ }
+
  const sellerCoords = seller.location!.coordinates as [number, number];
  const finalPrice = pickFinalPrice(grading.suggestedPriceMin, grading.suggestedPriceMax);
- const neighbor = await findNeighborMatches(sellerCoords, product.category);
+ const neighbor = await findNeighborMatches(matchCoords, product.category);
  const hasLocalBuyers =
  finalPrice <= 800 && neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
 
@@ -168,6 +180,11 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  await ret.save();
 
  // Credits are awarded to seller when the item is successfully resold (buyer picks up).
+
+ // If this is a resell, mark the original return as listed
+ if (returnId) {
+ await ReturnModel.findByIdAndUpdate(returnId, { resellStatus: "LISTED_FOR_RESELL" });
+ }
 
  res.json({
  return: ret.toObject(),
@@ -298,34 +315,101 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  const buyer = await UserModel.findById(req.user!.id).lean();
  const buyerCoords = buyer?.location?.coordinates as [number, number] || [77.5946, 12.9716];
 
+ // --- HYPERLOCAL ROUTING ---
+ // Find nearby lockers and buyers relative to the BUYER's location
+ // (the item is physically with the buyer)
+ const neighbor = await findNeighborMatches(buyerCoords, product.category);
+
+ // Estimate logistics cost: shipping back to seller warehouse
+ const estimatedShippingCost = (product.weightGrams ?? 500) > 1000 ? 150 : 80;
+ const estimatedResalePrice = Math.round(pricePaid * 0.7);
+
+ // Decide route: if shipping > resale value OR nearby buyers exist, use Neighbor First
+ const hasLocalBuyers = neighbor.buyersNearby.length > 0 && neighbor.nearestLocker !== null;
+ const useNeighborFirst = hasLocalBuyers && (estimatedShippingCost > estimatedResalePrice * 0.3 || pricePaid <= 800);
+
+ const route = useNeighborFirst ? "NEIGHBOR_FIRST" : "RENEWED";
+ const routeReason = useNeighborFirst
+ ? `Logistics cost (₹${estimatedShippingCost}) makes shipping unviable. ${neighbor.buyersNearby.length} local buyer(s) found within 20km. Item placed at nearby locker.`
+ : "No nearby buyers or high-value item — routed for renewed resale.";
+
  const ret = await ReturnModel.create({
  productId: product._id,
  sellerId: req.user!.id, // buyer who is returning
  originalSellerId, // seller from whom it was purchased
  images: product.images || [],
- aiGrade: "B", // auto-grade for buyer returns (can be improved later)
+ aiGrade: "B",
  aiSummary: reason || "Buyer initiated return within 7-day window.",
  defects: [],
  confidence: 0.85,
  priceBand: { min: Math.round(pricePaid * 0.6), max: Math.round(pricePaid * 0.85) },
- route: "NEIGHBOR_FIRST",
- routeReason: "Buyer return — routed back to seller for resale",
- estimatedRecovery: Math.round(pricePaid * 0.7),
- logisticsCost: 0,
+ route,
+ routeReason,
+ estimatedRecovery: estimatedResalePrice,
+ logisticsCost: useNeighborFirst ? 0 : estimatedShippingCost,
  sellerLocation: { type: "Point", coordinates: buyerCoords },
- status: "ROUTED",
+ status: useNeighborFirst && neighbor.nearestLocker ? "LISTED" : "ROUTED",
  refundAmount: pricePaid,
  sellerRefundIssued: true,
  resellStatus: "PENDING_RESELL",
  });
+
+ // If Neighbor First — auto-create a listing at the nearby locker
+ let listing = null;
+ if (useNeighborFirst && neighbor.nearestLocker) {
+ const { generatePickupCode, makeQrDataUrl } = await import("../utils/qrcode.js");
+ const pickupCode = generatePickupCode();
+ const qr = await makeQrDataUrl(JSON.stringify({ code: pickupCode, returnId: String(ret._id) }));
+
+ listing = await ListingModel.create({
+ returnId: ret._id,
+ productId: product._id,
+ sellerId: originalSellerId || req.user!.id,
+ lockerId: neighbor.nearestLocker._id,
+ priceFinal: estimatedResalePrice,
+ title: product.title,
+ grade: "B",
+ images: product.images || [],
+ summary: reason || "Buyer return — item in good condition.",
+ defects: [],
+ location: { type: "Point", coordinates: neighbor.nearestLocker.coordinates },
+ status: "LIVE",
+ pickupCode,
+ qrDataUrl: qr,
+ expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 2 weeks
+ });
+
+ // Notify nearby buyers
+ await notifyNearbyBuyers({
+ listing: { _id: listing._id, title: listing.title, priceFinal: listing.priceFinal, grade: listing.grade, location: listing.location! },
+ category: product.category,
+ });
+
+ // Award locker partner credits and increment occupied
+ await LockerModel.findByIdAndUpdate(neighbor.nearestLocker._id, { $inc: { occupied: 1 } });
+ const lockerDoc = await LockerModel.findById(neighbor.nearestLocker._id).lean();
+ if (lockerDoc?.userId) {
+ await awardCredits(lockerDoc.userId, "LOCKER_STORAGE", {
+ listingId: listing._id,
+ returnId: ret._id,
+ productId: product._id,
+ descriptionOverride: `Returned item "${product.title}" assigned to your locker`,
+ });
+ }
+ }
 
  // Update order status
  await OrderModel.findByIdAndUpdate(orderId, { status: "CANCELLED" });
 
  res.json({
  ok: true,
- message: "Return initiated successfully. Refund will be processed.",
+ message: useNeighborFirst
+ ? `Return initiated. Item listed at ${neighbor.nearestLocker?.name ?? "nearby locker"} for local resale — zero shipping!`
+ : "Return initiated successfully. Refund will be processed.",
  return: ret.toObject(),
+ listing: listing ? listing.toObject() : null,
+ nearbyBuyers: neighbor.buyersNearby.length,
+ nearestLocker: neighbor.nearestLocker,
  });
  } catch (e) {
  next(e);

@@ -103,6 +103,11 @@ export default function NewReturn() {
     try {
       const fd = new FormData();
       fd.append("productId", productId);
+      // If this is a resell item, pass the returnId so backend uses buyer's location
+      const selectedProduct = products.find((p) => p._id === productId);
+      if (selectedProduct?.returnId) {
+        fd.append("returnId", selectedProduct.returnId);
+      }
       files.forEach((f) => fd.append("images", f));
       const r = await api<GradeResp>("/returns", { method: "POST", body: fd });
       setResult(r);

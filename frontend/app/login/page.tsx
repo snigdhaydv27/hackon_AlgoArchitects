@@ -231,7 +231,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
               Forgot password?
             </button>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg bg-[#FFD814] hover:bg-[#F7CA00] text-[#0F1111] shadow-sm cursor-pointer active:scale-95 transition-all disabled:opacity-50">
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             Sign in
           </button>
@@ -273,7 +273,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
               ))}
             </div>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg bg-[#FFD814] hover:bg-[#F7CA00] text-[#0F1111] shadow-sm cursor-pointer active:scale-95 transition-all disabled:opacity-50">
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             Create account
           </button>
@@ -293,7 +293,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
             <input type="text" value={code} onChange={(e) => setCode(e.target.value)} required
               className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-300 text-sm text-center text-2xl tracking-widest" placeholder="123456" />
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg bg-[#FFD814] hover:bg-[#F7CA00] text-[#0F1111] shadow-sm cursor-pointer active:scale-95 transition-all disabled:opacity-50">
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             Verify email
           </button>
@@ -310,7 +310,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
                 className="w-full pl-10 pr-3 py-2 rounded-lg border border-slate-300 text-sm" placeholder="you@example.com" />
             </div>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg bg-[#FFD814] hover:bg-[#F7CA00] text-[#0F1111] shadow-sm cursor-pointer active:scale-95 transition-all disabled:opacity-50">
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             Send reset code
           </button>
@@ -338,7 +338,7 @@ function AuthForm({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void })
                 className="w-full pl-10 pr-3 py-2 rounded-lg border border-slate-300 text-sm" placeholder="Min 8 characters" />
             </div>
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-lg bg-[#FFD814] hover:bg-[#F7CA00] text-[#0F1111] shadow-sm cursor-pointer active:scale-95 transition-all disabled:opacity-50">
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             Reset password
           </button>

@@ -18,7 +18,7 @@ html, body {
     @apply inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-sm transition-all shadow-sm rounded-lg border font-medium cursor-pointer select-none active:scale-95;
   }
   .btn-primary {
-    @apply btn bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-transparent hover:from-emerald-400 hover:to-emerald-500 shadow-md shadow-emerald-500/20;
+    @apply btn bg-[#FFD814] text-[#0F1111] border-transparent hover:bg-[#F7CA00] shadow-md shadow-amber-500/20;
   }
   .btn-secondary {
     @apply btn bg-white/80 backdrop-blur-md text-slate-800 border-slate-200/50 hover:bg-white/90 hover:shadow-sm;

@@ -15,8 +15,8 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   }, err.message ?? "Unhandled error");
 
   // In production, don't leak error details to client
-  const message = status >= 500 && env.isProd
-    ? "Internal server error"
+  const message = status >= 500
+    ? `Internal server error: ${err.message ?? "unknown"}`
     : err.message ?? "Internal error";
 
   res.status(status).json({

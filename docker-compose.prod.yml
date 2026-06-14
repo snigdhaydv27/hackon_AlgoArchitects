@@ -18,10 +18,7 @@ services:
       start_period: 15s
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        BACKEND_URL: http://backend:8080
+    build: ./frontend
     restart: unless-stopped
     environment:
       - BACKEND_URL=http://backend:8080   # server-side proxy target (Next.js rewrites)

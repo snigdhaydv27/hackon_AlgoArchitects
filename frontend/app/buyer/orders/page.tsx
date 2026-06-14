@@ -41,7 +41,7 @@ interface BuyerReturn {
 type Tab = "orders" | "delivered" | "returns";
 
 export default function BuyerOrdersPage() {
-  const [tab, setTab] = useState<Tab>("orders");
+  const [tab, setTab] = useState<Tab>("delivered");
   const [orders, setOrders] = useState<Order[]>([]);
   const [returns, setReturns] = useState<BuyerReturn[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,15 +52,13 @@ export default function BuyerOrdersPage() {
 
   function fetchData() {
     setLoading(true);
-    Promise.all([
-      api<Order[]>("/cart/orders"),
-      api<BuyerReturn[]>("/returns/my-buyer-returns"),
-    ])
-      .then(([o, r]) => {
-        setOrders(o);
-        setReturns(r);
-      })
-      .catch(() => {})
+    // Fetch independently so one failure doesn't block the other
+    api<Order[]>("/cart/orders")
+      .then(setOrders)
+      .catch((e) => { console.error("Failed to fetch orders:", e); setOrders([]); });
+    api<BuyerReturn[]>("/returns/my-buyer-returns")
+      .then(setReturns)
+      .catch((e) => { console.error("Failed to fetch returns:", e); setReturns([]); })
       .finally(() => setLoading(false));
   }
 
@@ -83,7 +81,9 @@ export default function BuyerOrdersPage() {
       });
       setShowReturnModal(null);
       setReturnReason("");
-      fetchData();
+      // Refresh both lists
+      api<Order[]>("/cart/orders").then(setOrders).catch(() => {});
+      api<BuyerReturn[]>("/returns/my-buyer-returns").then(setReturns).catch(() => {});
       setTab("returns");
     } catch (e: any) {
       const msg = e.message || String(e);

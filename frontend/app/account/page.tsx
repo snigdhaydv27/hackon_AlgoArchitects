@@ -33,14 +33,14 @@ export default function AccountPage() {
       description: "Edit addresses and delivery preferences",
       icon: <MapPin className="size-8 text-[#008296] stroke-[1.5]" />,
       href: "/account/addresses",
-      show: user.role !== "admin",
+      show: user.role !== "admin" && user.role !== "locker",
     },
     {
       title: "Payment options",
       description: "Edit or add payment methods and Razorpay config",
       icon: <CreditCard className="size-8 text-[#008296] stroke-[1.5]" />,
       href: isSeller ? "/seller/payment-settings" : "/account/profile",
-      show: user.role !== "admin",
+      show: user.role !== "admin" && user.role !== "locker",
     },
     {
       title: "Your Orders & Returns",

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth, AuthUser } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { api } from "@/lib/api";
-import { Recycle, LogOut, MapPin, ChevronDown, User, X, Crosshair, Loader2 } from "lucide-react";
+import { Recycle, LogOut, MapPin, ChevronDown, User, X, Crosshair, Loader2, Leaf } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
 import { BarChart3, Map, ShoppingBag, Package, Sparkles, RotateCcw } from "lucide-react";
 
@@ -77,6 +77,14 @@ export function Nav() {
               <div className="relative border border-transparent hover:border-white rounded p-1">
                 <BuyerInbox />
               </div>
+            )}
+
+            {/* Green Credits for buyers */}
+            {user && user.role === "buyer" && (
+              <Link href="/credits" className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 border border-transparent hover:border-white rounded">
+                <Leaf className="size-4 text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-400">{user.greenCredits ?? 0}</span>
+              </Link>
             )}
 
             {/* Cart Icon */}

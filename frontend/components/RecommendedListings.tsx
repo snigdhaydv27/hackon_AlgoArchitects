@@ -5,7 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { GradeBadge } from "@/components/GradeBadge";
-import { ProductImage } from "@/components/ProductImage";
+import { ImageSlider } from "@/components/ImageSlider";
 import { Sparkles, ShieldCheck, MapPin, Tag, Loader2 } from "lucide-react";
 
 interface RecommendedListing {
@@ -87,7 +87,7 @@ export function RecommendedListings() {
           >
             {/* Image */}
             <div className="relative aspect-video bg-slate-100">
-              <ProductImage src={listing.images[0]} alt={listing.title} className="w-full h-full" />
+              <ImageSlider images={listing.images || []} alt={listing.title} className="w-full h-full" />
               <div className="absolute top-2 left-2">
                 <GradeBadge grade={listing.grade} size="sm" />
               </div>

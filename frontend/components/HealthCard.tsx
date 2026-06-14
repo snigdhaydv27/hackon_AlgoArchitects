@@ -1,6 +1,6 @@
 import { ShieldCheck, BadgeCheck, Box, Package } from "lucide-react";
 import { GradeBadge } from "./GradeBadge";
-import { ProductImage } from "./ProductImage";
+import { ImageSlider } from "./ImageSlider";
 
 export interface HealthCardData {
  grade: "A" | "B" | "C" | "D";
@@ -15,7 +15,8 @@ export interface HealthCardData {
  savingsPercent: number;
 }
 
-export function HealthCard({ data, image }: { data: HealthCardData; image?: string }) {
+export function HealthCard({ data, image, images }: { data: HealthCardData; image?: string; images?: string[] }) {
+ const allImages = images && images.length > 0 ? images : image ? [image] : [];
  return (
  <div className="card overflow-hidden">
  <div className="bg-gradient-to-br from-brand-50 to-white p-5 border-b border-slate-200">
@@ -29,9 +30,9 @@ export function HealthCard({ data, image }: { data: HealthCardData; image?: stri
  <p className="mt-3 text-sm text-slate-700">{data.summary}</p>
  </div>
 
- {image && (
+ {allImages.length > 0 && (
  <div className="relative aspect-video bg-slate-50">
- <ProductImage src={image} alt="Product" className="w-full h-full object-contain" />
+ <ImageSlider images={allImages} alt="Product" className="w-full h-full" />
  </div>
  )}
 

@@ -85,7 +85,7 @@ export default function Reserve() {
   return (
     <RoleGuard allowed={["buyer", "admin"]}>
     <div className="mx-auto max-w-5xl px-4 py-10 grid gap-6 lg:grid-cols-2">
-      <HealthCard data={healthCard} image={listing.images[0]} />
+      <HealthCard data={healthCard} images={listing.images} />
 
       <div className="space-y-5">
         <div className="card p-5">

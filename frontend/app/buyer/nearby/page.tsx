@@ -7,7 +7,6 @@ import { useAuth } from "@/lib/auth";
 import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import { LocationSetter } from "@/components/LocationSetter";
-import { RecommendedListings } from "@/components/RecommendedListings";
 import { ImageSlider } from "@/components/ImageSlider";
 import { MapPin, ShieldCheck } from "lucide-react";
 
@@ -47,20 +46,13 @@ export default function NearbyListings() {
  return (
  <RoleGuard allowed={["buyer", "admin"]}>
  <div className="mx-auto max-w-6xl px-4 py-10">
-
- {/* Personalized Recommendations */}
- <section className="mb-10">
- <RecommendedListings />
- </section>
-
- <div className="border-t border-slate-200 pt-8">
  <div className="flex items-center gap-2 text-sm text-slate-500">
  <MapPin className="size-4" />
  Showing listings within 25 km of {user.address}
  </div>
  <h1 className="mt-2 text-3xl font-bold">Verified items near you</h1>
  <p className="text-slate-600">
- Each item is AI-graded, fixed-price, and pickup-ready at a locker partner. Zero strangers.
+ Each item is AI-graded, fixed-price, and pickup-ready at a locker. Zero strangers.
  </p>
 
  <div className="mt-5 max-w-md">
@@ -75,7 +67,7 @@ export default function NearbyListings() {
 
  {list.length === 0 && !error && (
  <div className="mt-10 card p-8 text-center text-slate-500">
- No listings within 25 km yet. Try generating a return as Priya — that will create one nearby.
+ No listings within 25 km yet. Try generating a return as a seller — that will create one nearby.
  </div>
  )}
 
@@ -106,7 +98,6 @@ export default function NearbyListings() {
  </div>
  </Link>
  ))}
- </div>
  </div>
  </div>
  </RoleGuard>

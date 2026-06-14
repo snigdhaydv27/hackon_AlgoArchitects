@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth";
-import { Recycle, LogOut, Search, MapPin, ChevronDown, User, X } from "lucide-react";
+import { useAuth, AuthUser } from "@/lib/auth";
+import { api } from "@/lib/api";
+import { Recycle, LogOut, Search, MapPin, ChevronDown, User, X, Crosshair, Loader2 } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
-import { BarChart3, Map, ShoppingBag, Package } from "lucide-react";
+import { BarChart3, Map, ShoppingBag, Package, Sparkles } from "lucide-react";
 
 export function Nav() {
   const { user, logout } = useAuth();
@@ -14,6 +15,8 @@ export function Nav() {
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Location picker state
+  const [locationOpen, setLocationOpen] = useState(false);
 
   return (
     <>
@@ -30,13 +33,21 @@ export function Nav() {
             <div className="w-16 h-1 bg-[#ff9900] rounded-b-md transform translate-x-2 -mt-0.5" style={{ borderRadius: '0 0 100% 100%' }}></div>
           </Link>
 
-          {/* Deliver To Pin Widget */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 border border-transparent hover:border-white rounded cursor-pointer select-none text-xs">
-            <MapPin className="size-4 text-white mt-1" />
-            <div className="flex flex-col leading-none">
-              <span className="text-[#ccc] text-[10px]">Deliver to</span>
-              <span className="font-bold text-white mt-0.5">{user ? user.name : "India"}</span>
-            </div>
+          {/* Deliver To Pin Widget — Functional */}
+          <div className="hidden sm:block relative">
+            <button
+              onClick={() => setLocationOpen(!locationOpen)}
+              className="flex items-center gap-1.5 px-2 py-1.5 border border-transparent hover:border-white rounded cursor-pointer select-none text-xs bg-transparent text-white outline-none"
+            >
+              <MapPin className="size-4 text-white mt-1" />
+              <div className="flex flex-col leading-none text-left">
+                <span className="text-[#ccc] text-[10px]">Deliver to</span>
+                <span className="font-bold text-white mt-0.5 max-w-[120px] truncate">
+                  {user?.address ? user.address.split(",")[0] : "Update location"}
+                </span>
+              </div>
+            </button>
+            {locationOpen && <LocationPicker onClose={() => setLocationOpen(false)} />}
           </div>
 
           {/* Search Bar Simulator */}
@@ -280,7 +291,18 @@ export function Nav() {
                         onClick={() => setSidebarOpen(false)}
                         className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
                       >
-                        🗺️ Local Nearby Locker Maps
+                        🗺️ Nearby Listings
+                      </Link>
+                    </li>
+                  )}
+                  {user?.role === "buyer" && (
+                    <li>
+                      <Link
+                        href="/buyer/recommended"
+                        onClick={() => setSidebarOpen(false)}
+                        className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                      >
+                        ✨ Recommended for You
                       </Link>
                     </li>
                   )}
@@ -336,6 +358,107 @@ export function Nav() {
   );
 }
 
+function LocationPicker({ onClose }: { onClose: () => void }) {
+  const { user } = useAuth();
+  const [address, setAddress] = useState("");
+  const [working, setWorking] = useState<"gps" | "address" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+
+  async function useGps() {
+    setError(null);
+    setSuccess(null);
+    if (!navigator.geolocation) { setError("Geolocation not supported"); return; }
+    setWorking("gps");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const r = await api<AuthUser>("/auth/me/location", {
+            method: "PUT",
+            body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          });
+          setSuccess(r.address || "Location updated");
+          setTimeout(() => window.location.reload(), 1000);
+        } catch (e) { setError(String(e)); }
+        finally { setWorking(null); }
+      },
+      (err) => { setError(`Permission denied: ${err.message}`); setWorking(null); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  async function useAddress() {
+    if (!address.trim()) return;
+    setError(null); setSuccess(null); setWorking("address");
+    try {
+      const r = await api<AuthUser>("/auth/me/location", {
+        method: "PUT",
+        body: JSON.stringify({ address }),
+      });
+      setSuccess(r.address || "Location updated");
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (e) { setError(String(e)); }
+    finally { setWorking(null); }
+  }
+
+  return (
+    <div ref={ref} className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-2xl border border-slate-200 z-50 p-4 text-slate-800">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+          <MapPin className="size-4 text-emerald-600" />
+          Choose your location
+        </h3>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 bg-transparent border-none">
+          <X className="size-4" />
+        </button>
+      </div>
+      <p className="text-xs text-slate-500 mb-3">Delivery options and item availability depend on your location.</p>
+      {user?.address && (
+        <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600">
+          <span className="font-medium text-slate-700">Current:</span> {user.address}
+        </div>
+      )}
+      <button onClick={useGps} disabled={working !== null} className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm py-2.5 px-4 rounded-lg transition disabled:opacity-50 mb-3">
+        {working === "gps" ? <Loader2 className="size-4 animate-spin" /> : <Crosshair className="size-4" />}
+        Use my current location
+      </button>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="flex-1 h-px bg-slate-200" />
+        <span className="text-[10px] text-slate-400 uppercase">or type address</span>
+        <div className="flex-1 h-px bg-slate-200" />
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && useAddress()}
+          placeholder="e.g. Koramangala, Bangalore"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
+        <button onClick={useAddress} disabled={working !== null || !address.trim()} className="bg-[#FFD814] hover:bg-[#F7CA00] text-[#0F1111] font-medium text-sm px-4 py-2 rounded-lg transition disabled:opacity-50">
+          {working === "address" ? <Loader2 className="size-4 animate-spin" /> : "Apply"}
+        </button>
+      </div>
+      {error && <div className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded p-2">{error}</div>}
+      {success && <div className="mt-2 text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 rounded p-2">✓ {success}</div>}
+      {!user && (
+        <div className="mt-3 text-center">
+          <Link href="/login" onClick={onClose} className="text-xs text-blue-600 hover:underline font-medium">Sign in to save your location</Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function navLinks(role?: string) {
   if (!role) return [];
   if (role === "admin") {
@@ -344,6 +467,7 @@ function navLinks(role?: string) {
   if (role === "buyer") {
     return [
       { href: "/buyer/nearby", label: "Nearby", icon: Map },
+      { href: "/buyer/recommended", label: "For You", icon: Sparkles },
       { href: "/shop", label: "Shop", icon: ShoppingBag },
     ];
   }

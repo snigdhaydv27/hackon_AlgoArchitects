@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
 import { RoleGuard } from "@/components/RoleGuard";
-import { RecommendedListings } from "@/components/RecommendedListings";
-import { ShieldCheck } from "lucide-react";
 
 interface Product {
   _id: string;
@@ -19,7 +16,6 @@ interface Product {
 }
 
 export default function Shop() {
-  const { user } = useAuth();
   const [list, setList] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -28,47 +24,26 @@ export default function Shop() {
 
   return (
     <RoleGuard allowed={["buyer", "admin"]}>
-      <div className="mx-auto max-w-6xl px-4 py-10 space-y-10">
-
-        {/* Personalized Recommendations Section */}
-        {user && (
-          <section>
-            <RecommendedListings />
-          </section>
-        )}
-
-        {/* Divider */}
-        {user && (
-          <div className="border-t border-slate-200 pt-8">
-            <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wider font-medium">
-              <ShieldCheck className="size-4" />
-              New Products (with AI Return Prevention)
-            </div>
-          </div>
-        )}
-
-        {/* Original new product shop (with prevention) */}
-        <div>
-          <h1 className="text-3xl font-bold">Shop new (with prevention)</h1>
-          <p className="text-slate-600">
-            New product purchase flow with Amazon&apos;s pre-purchase AI warning. Try Sparx Running Shoes — the prevention layer triggers there.
-          </p>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((p) => (
-              <Link
-                key={p._id}
-                href={`/shop/${p._id}`}
-                className="card overflow-hidden hover:border-brand-300 hover:shadow-md transition"
-              >
-                <div className="aspect-video bg-slate-100" />
-                <div className="p-4">
-                  <div className="font-semibold">{p.title}</div>
-                  <div className="text-xs text-slate-500">{p.brand} · {p.category}</div>
-                  <div className="text-xl font-bold text-slate-900 mt-2">₹{p.originalPrice}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <h1 className="text-3xl font-bold">Shop new (with prevention)</h1>
+        <p className="text-slate-600">
+          New product purchase flow with ReLoop&apos;s pre-purchase AI warning. Try Sparx Running Shoes — the prevention layer triggers there.
+        </p>
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((p) => (
+            <Link
+              key={p._id}
+              href={`/shop/${p._id}`}
+              className="card overflow-hidden hover:border-brand-300 hover:shadow-md transition"
+            >
+              <div className="aspect-video bg-slate-100" />
+              <div className="p-4">
+                <div className="font-semibold">{p.title}</div>
+                <div className="text-xs text-slate-500">{p.brand} · {p.category}</div>
+                <div className="text-xl font-bold text-slate-900 mt-2">₹{p.originalPrice}</div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </RoleGuard>

@@ -319,6 +319,22 @@ router.put("/me/payment-settings", requireAuth, async (req, res) => {
   res.json({ ok: true, message: "Payment settings saved successfully" });
 });
 
+router.put("/me/profile", requireAuth, async (req, res) => {
+  const { name, avatar, tagline } = req.body ?? {};
+
+  const updated = await UserModel.findByIdAndUpdate(
+    req.user!.id,
+    { $set: { name, avatar, tagline } },
+    { new: true }
+  ).lean();
+
+  if (!updated) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json(serializeUser(updated));
+});
+
 router.put("/me/location", requireAuth, async (req, res) => {
   const { lat, lng, address } = req.body ?? {};
   let coords: [number, number] | null = null;

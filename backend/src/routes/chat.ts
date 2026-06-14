@@ -1,15 +1,32 @@
-import express, { Request, Response } from "express";
-import { requireAuth } from "../middleware/mockAuth.js";
-import { handleUserMessage } from "../services/chatbot.js";
+import express, { Request, Response, RequestHandler } from "express";
+import jwt from "jsonwebtoken";
+import { handleUserMessage, handleGuestMessage } from "../services/chatbot.js";
 import { ReturnModel } from "../models/Return.js";
 import { ListingModel } from "../models/Listing.js";
 import { ProductModel } from "../models/Product.js";
 import { UserModel } from "../models/User.js";
 import { LockerModel } from "../models/Locker.js";
+import { env } from "../config/env.js";
+import type { AuthedUser } from "../middleware/mockAuth.js";
+
+// Optional auth — sets req.user if token is valid, otherwise continues without it
+const optionalAuth: RequestHandler = (req, _res, next) => {
+  const header = req.headers.authorization;
+  const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
+  if (token) {
+    try {
+      const payload = jwt.verify(token, env.jwtSecret) as AuthedUser;
+      req.user = payload;
+    } catch {
+      // Invalid token — continue as guest
+    }
+  }
+  next();
+};
 
 const router = express.Router();
 
-router.post("/", requireAuth, async (req: Request, res: Response) => {
+router.post("/", optionalAuth, async (req: Request, res: Response) => {
   const { message } = req.body;
 
   if (!message || typeof message !== "string") {
@@ -17,18 +34,25 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
   }
 
   try {
-    const userId = req.user!.id;
-    const userRole = req.user!.role;
-    const userName = req.user!.name;
+    // ===== GUEST MODE (not logged in) =====
+    if (!req.user) {
+      const reply = await handleGuestMessage(message);
+      return res.json({ reply });
+    }
 
-    // ===== PLATFORM-WIDE DATA (available to all roles) =====
+    // ===== LOGGED IN MODE =====
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    const userName = req.user.name;
+
+    // Platform-wide data
     const allProducts = await ProductModel.find({}).lean();
     const liveListings = await ListingModel.find({ status: "LIVE" })
       .populate("productId", "title category brand originalPrice")
       .populate("lockerId", "name address")
       .lean();
 
-    const productCatalog = allProducts.map((p) => 
+    const productCatalog = allProducts.map((p) =>
       `- "${p.title}" | Category: ${p.category} | Brand: ${p.brand || "N/A"} | Original Price: ₹${p.originalPrice}`
     ).join("\n");
 
@@ -42,7 +66,6 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
 
     const platformContext = `
 --- PLATFORM INVENTORY (REAL-TIME) ---
-
 PRODUCT CATALOG (${allProducts.length} products):
 ${productCatalog}
 
@@ -52,7 +75,7 @@ ${availableListings.length > 0 ? availableListings : "No listings currently avai
 CATEGORIES WITH LIVE ITEMS: ${categoriesAvailable.length > 0 ? categoriesAvailable.join(", ") : "None currently"}
 --- END PLATFORM INVENTORY ---`;
 
-    // ===== ROLE-SPECIFIC DATA =====
+    // Role-specific data
     let roleContext = "";
 
     if (userRole === "seller" || userRole === "small_seller") {
@@ -61,44 +84,29 @@ CATEGORIES WITH LIVE ITEMS: ${categoriesAvailable.length > 0 ? categoriesAvailab
 
       const totalReturns = returns.length;
       const pendingGrade = returns.filter((r) => r.status === "PENDING_GRADE").length;
-      const graded = returns.filter((r) => r.status === "GRADED").length;
-      const routed = returns.filter((r) => r.status === "ROUTED").length;
       const listed = returns.filter((r) => r.status === "LISTED").length;
       const completed = returns.filter((r) => r.status === "COMPLETE").length;
-      const donated = returns.filter((r) => r.status === "DONATED").length;
-      const recycled = returns.filter((r) => r.status === "RECYCLED").length;
 
       const totalListings = listings.length;
       const liveSellerListings = listings.filter((l) => l.status === "LIVE").length;
-      const reservedListings = listings.filter((l) => l.status === "RESERVED").length;
       const soldListings = listings.filter((l) => l.status === "COMPLETE" || l.status === "PAID").length;
 
       const totalEarnings = listings
         .filter((l) => l.status === "COMPLETE" || l.status === "PAID")
         .reduce((sum, l) => sum + (l.priceFinal || 0), 0);
 
-      const totalEstimatedRecovery = returns.reduce((sum, r) => sum + (r.estimatedRecovery || 0), 0);
-
       const recentReturns = returns.slice(-5).map((r) => {
         const product = r.productId as any;
-        return `- "${product?.title || "Unknown"}" | Grade: ${r.aiGrade || "Pending"} | Status: ${r.status} | Route: ${r.route || "Pending"} | Recovery: ₹${r.estimatedRecovery || 0}`;
-      });
-
-      const recentListings = listings.slice(-5).map((l) => {
-        return `- "${l.title}" | Grade: ${l.grade} | Price: ₹${l.priceFinal} | Status: ${l.status}`;
+        return `- "${product?.title || "Unknown"}" | Grade: ${r.aiGrade || "Pending"} | Status: ${r.status} | Route: ${r.route || "Pending"}`;
       });
 
       roleContext = `
 --- YOUR SELLER DASHBOARD ---
-RETURNS: Total ${totalReturns} | Pending: ${pendingGrade} | Graded: ${graded} | Routed: ${routed} | Listed: ${listed} | Completed: ${completed} | Donated: ${donated} | Recycled: ${recycled}
-LISTINGS: Total ${totalListings} | Live: ${liveSellerListings} | Reserved: ${reservedListings} | Sold: ${soldListings}
-EARNINGS: Total ₹${totalEarnings.toFixed(0)} | Estimated Recovery: ₹${totalEstimatedRecovery.toFixed(0)}
-
+RETURNS: Total ${totalReturns} | Pending: ${pendingGrade} | Listed: ${listed} | Completed: ${completed}
+LISTINGS: Total ${totalListings} | Live: ${liveSellerListings} | Sold: ${soldListings}
+EARNINGS: Total ₹${totalEarnings.toFixed(0)}
 RECENT RETURNS:
 ${recentReturns.length > 0 ? recentReturns.join("\n") : "No returns yet."}
-
-RECENT LISTINGS:
-${recentListings.length > 0 ? recentListings.join("\n") : "No listings yet."}
 --- END SELLER DATA ---`;
 
     } else if (userRole === "buyer") {
@@ -112,32 +120,21 @@ ${recentListings.length > 0 ? recentListings.join("\n") : "No listings yet."}
         .filter((p) => p.status === "COMPLETE" || p.status === "PAID")
         .reduce((sum, p) => sum + (p.priceFinal || 0), 0);
 
-      const recentPurchases = purchases.slice(-5).map((p) => {
-        return `- "${p.title}" | Grade: ${p.grade} | Price: ₹${p.priceFinal} | Status: ${p.status}`;
-      });
-
       const interests = (me as any)?.interests || [];
 
       roleContext = `
 --- YOUR BUYER DASHBOARD ---
-PURCHASES: Total ${totalPurchases} | Reserved (awaiting pickup): ${reserved} | Completed: ${completed}
+PURCHASES: Total ${totalPurchases} | Reserved: ${reserved} | Completed: ${completed}
 TOTAL SPENT: ₹${totalSpent.toFixed(0)}
 YOUR INTERESTS: ${interests.length > 0 ? interests.join(", ") : "Not set"}
-YOUR LOCATION: ${(me as any)?.address || "Not set"}
-
-RECENT PURCHASES:
-${recentPurchases.length > 0 ? recentPurchases.join("\n") : "No purchases yet."}
 --- END BUYER DATA ---`;
 
     } else if (userRole === "admin") {
       const totalReturns = await ReturnModel.countDocuments();
-      const totalListingsAll = await ListingModel.countDocuments();
       const totalUsers = await UserModel.countDocuments();
-      const totalLockers = await LockerModel.countDocuments();
-
       roleContext = `
 --- ADMIN OVERVIEW ---
-PLATFORM STATS: ${totalReturns} returns processed | ${totalListingsAll} listings created | ${totalUsers} users | ${totalLockers} lockers
+PLATFORM: ${totalReturns} returns | ${totalUsers} users
 --- END ADMIN DATA ---`;
     }
 

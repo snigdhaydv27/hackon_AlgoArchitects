@@ -1,0 +1,30 @@
+# Production deployment — backend + frontend (DB is MongoDB Atlas, not local)
+# Usage on server:
+#   docker-compose -f docker-compose.prod.yml up -d --build
+# Secrets come from backend/.env.prod (NOT committed — see .gitignore)
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env.prod
+    expose:
+      - "8080"            # internal only; reached by frontend via service name
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      - BACKEND_URL=http://backend:8080   # server-side proxy target (Next.js rewrites)
+      - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - "80:3000"         # public site served on port 80
+    depends_on:
+      backend:
+        condition: service_healthy

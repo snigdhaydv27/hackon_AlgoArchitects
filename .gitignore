@@ -3,6 +3,8 @@ dist
 .next
 .env
 .env.local
+.env.prod
+.env.production
 backend/uploads/*
 !backend/uploads/.gitkeep
 *.log

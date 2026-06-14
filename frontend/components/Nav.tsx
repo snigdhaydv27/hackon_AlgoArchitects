@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth, AuthUser } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { api } from "@/lib/api";
-import { Recycle, LogOut, Search, MapPin, ChevronDown, User, X, Crosshair, Loader2 } from "lucide-react";
+import { Recycle, LogOut, MapPin, ChevronDown, User, X, Crosshair, Loader2 } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
 import { BarChart3, Map, ShoppingBag, Package, Sparkles } from "lucide-react";
 
@@ -51,23 +51,7 @@ export function Nav() {
             {locationOpen && <LocationPicker onClose={() => setLocationOpen(false)} />}
           </div>
 
-          {/* Search Bar Simulator */}
-          <div className="flex-grow max-w-xl hidden md:flex items-center h-9 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#ff9900]">
-            <select className="bg-[#f3f3f3] hover:bg-[#e3e3e3] border-r border-slate-300 text-slate-700 text-xs px-3 h-full outline-none cursor-pointer">
-              <option>All Sections</option>
-              <option>Refurbished Shop</option>
-              <option>Return Analytics</option>
-              <option>Prevention Insights</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Search ReLoop circular products..."
-              className="flex-grow px-3 text-slate-800 text-sm h-full outline-none"
-            />
-            <button className="bg-[#febd69] hover:bg-[#f3a847] text-[#111] px-5 h-full flex items-center justify-center transition-colors cursor-pointer">
-              <Search className="size-5" />
-            </button>
-          </div>
+
 
           {/* Account and Notifications */}
           <div className="flex items-center gap-3 text-xs">

@@ -62,6 +62,7 @@ const COLORS = ["#1eb877", "#0ea5e9", "#f59e0b", "#ec4899", "#64748b"];
 export default function Admin() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [returns, setReturns] = useState<Ret[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [sellers, setSellers] = useState<Persona[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [simulating, setSimulating] = useState(false);
@@ -77,12 +78,14 @@ export default function Admin() {
   }, [user, authLoading, router]);
 
   async function refresh() {
-    const [s, r] = await Promise.all([
+    const [s, r, o] = await Promise.all([
       api<Stats>("/admin/stats"),
       api<Ret[]>("/admin/returns"),
+      api<any[]>("/admin/orders"),
     ]);
     setStats(s);
     setReturns(r);
+    setOrders(o);
   }
 
   useEffect(() => {
@@ -259,6 +262,41 @@ export default function Admin() {
                 </td>
               </tr>
             ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-8 card overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-200 font-semibold">Recent Shop Orders</div>
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
+            <tr>
+              <th className="px-4 py-3 text-left">Order ID</th>
+              <th className="px-4 py-3 text-left">Buyer</th>
+              <th className="px-4 py-3 text-left">Items</th>
+              <th className="px-4 py-3 text-right">Total Amount</th>
+              <th className="px-4 py-3 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.slice(0, 12).map((o) => (
+              <tr key={o._id} className="border-t border-slate-100">
+                <td className="px-4 py-3 font-medium text-xs">{o._id}</td>
+                <td className="px-4 py-3 text-slate-600">{o.userId?.name}</td>
+                <td className="px-4 py-3 text-slate-700">{o.items.length} item(s)</td>
+                <td className="px-4 py-3 text-right font-medium">₹{o.totalAmount}</td>
+                <td className="px-4 py-3">
+                  <span className={`pill text-xs ${o.status === "DELIVERED" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"}`}>
+                    {o.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+            {orders.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">No orders found.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

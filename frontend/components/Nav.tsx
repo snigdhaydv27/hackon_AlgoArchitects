@@ -58,12 +58,16 @@ export function Nav() {
             {/* Sign In & Account Links */}
             {user ? (
               <div className="flex items-center gap-2">
-                <div className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded select-none cursor-pointer leading-none">
+                <Link href="/account" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded select-none cursor-pointer leading-none">
                   <span className="text-[#ccc] text-[10px]">Hello, {user.name}</span>
                   <span className="font-bold text-white flex items-center gap-0.5 mt-0.5">
                     {user.role} <ChevronDown className="size-3 text-[#ccc]" />
                   </span>
-                </div>
+                </Link>
+                <Link href="/orders" className="hidden sm:flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
+                  <span className="text-[#ccc] text-[10px]">Returns</span>
+                  <span className="font-bold text-white mt-0.5">& Orders</span>
+                </Link>
               </div>
             ) : (
               <Link href="/login" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
@@ -362,7 +366,7 @@ export function Nav() {
                     <>
                       <li>
                         <Link
-                          href="/cart"
+                          href="/orders"
                           onClick={() => setSidebarOpen(false)}
                           className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
                         >

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AmazonLogo } from "./AmazonLogo";
+import { Recycle } from "lucide-react";
 
 export function Footer() {
   const handleScrollToTop = () => {
@@ -24,18 +24,18 @@ export function Footer() {
           <div>
             <h4 className="text-white font-bold text-sm mb-4">Get to Know Us</h4>
             <ul className="space-y-2.5 text-xs text-[#ddd] hover:underline-child">
-              <li><Link href="/" className="hover:underline">About Amazon</Link></li>
+              <li><Link href="/" className="hover:underline">About ReLoop</Link></li>
               <li><Link href="/" className="hover:underline">Sustainability Impact</Link></li>
               <li><Link href="/" className="hover:underline">Green Technologies</Link></li>
-              <li><Link href="/" className="hover:underline">Amazon Devices</Link></li>
+              <li><Link href="/" className="hover:underline">ReLoop Devices</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-white font-bold text-sm mb-4">Connect with Us</h4>
             <ul className="space-y-2.5 text-xs text-[#ddd]">
-              <li><Link href="/" className="hover:underline">Facebook</Link></li>
-              <li><Link href="/" className="hover:underline">Twitter / X</Link></li>
-              <li><Link href="/" className="hover:underline">Instagram</Link></li>
+              <li><Link href="https://www.facebook.com/AmazonIN" className="hover:underline">Facebook</Link></li>
+              <li><Link href="https://x.com/AmazonIN" className="hover:underline">Twitter / X</Link></li>
+              <li><Link href="https://www.instagram.com/amazondotin" className="hover:underline">Instagram</Link></li>
               <li><Link href="/" className="hover:underline">Circular Commerce Blog</Link></li>
             </ul>
           </div>
@@ -45,7 +45,7 @@ export function Footer() {
               <li><Link href="/seller/return/new" className="hover:underline">Sell Refurbished Items</Link></li>
               <li><Link href="/" className="hover:underline">Become a Locker Partner</Link></li>
               <li><Link href="/" className="hover:underline">Advertise Your Products</Link></li>
-              <li><Link href="/" className="hover:underline">Amazon Cash/Credits program</Link></li>
+              <li><Link href="/" className="hover:underline">ReLoop Cash/Credits program</Link></li>
             </ul>
           </div>
           <div>
@@ -54,7 +54,7 @@ export function Footer() {
               <li><Link href="/shop" className="hover:underline">Certified Shop Program</Link></li>
               <li><Link href="/" className="hover:underline">Return Prevention Insights</Link></li>
               <li><Link href="/" className="hover:underline">Your Account</Link></li>
-              <li><Link href="/" className="hover:underline">Help & Support</Link></li>
+              <li><Link href="/help" className="hover:underline">Help & Support</Link></li>
             </ul>
           </div>
         </div>
@@ -62,7 +62,8 @@ export function Footer() {
         {/* Global Selectors Row */}
         <div className="mx-auto max-w-5xl flex flex-wrap items-center justify-center gap-6 pt-10 mt-10 border-t border-[#37475a] text-xs">
           <Link href="/" className="flex items-center gap-2 text-white font-bold mr-4">
-            <AmazonLogo textClassName="text-xl text-white" />
+            <Recycle className="size-5 text-[#ff9900]" />
+            <span className="text-sm">ReLoop</span>
           </Link>
           <div className="border border-slate-500 rounded px-3 py-1 bg-[#232f3e] text-slate-300 flex items-center gap-1.5 cursor-pointer hover:border-slate-300">
             <span>🌐</span> English
@@ -80,10 +81,10 @@ export function Footer() {
           <Link href="/" className="hover:underline">Privacy Notice</Link>
           <Link href="/" className="hover:underline">Interest-Based Ads</Link>
           <span className="text-slate-600">|</span>
-          <span>© 2026-2027 Amazon.com, Inc. or its affiliates. All rights reserved.</span>
+          <span>© 2026-2027 ReLoop.inc or its affiliates. All rights reserved.</span>
         </div>
         <p className="max-w-2xl mx-auto text-[10px] text-slate-500 leading-normal">
-          Amazon is a carbon-neutral shopping service. Standard logistics parameters are processed under deep verification models in compliance with circular economy guidelines.
+          ReLoop is a carbon-neutral shopping service. Standard logistics parameters are processed under deep verification models in compliance with circular economy guidelines.
         </p>
       </div>
     </footer>

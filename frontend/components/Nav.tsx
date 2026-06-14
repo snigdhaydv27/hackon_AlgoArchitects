@@ -63,17 +63,7 @@ export function Nav() {
                   <span className="font-bold text-white flex items-center gap-0.5 mt-0.5">
                     {user.role} <ChevronDown className="size-3 text-[#ccc]" />
                   </span>
-<<<<<<< Updated upstream
-                </Link>
-                {user.role !== "admin" && user.role !== "locker" && (
-                  <Link href="/orders" className="hidden sm:flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
-                    <span className="text-[#ccc] text-[10px]">Returns</span>
-                    <span className="font-bold text-white mt-0.5">& Orders</span>
-                  </Link>
-                )}
-=======
                 </div>
->>>>>>> Stashed changes
               </div>
             ) : (
               <Link href="/login" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">

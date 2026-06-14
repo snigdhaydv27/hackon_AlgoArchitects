@@ -51,7 +51,7 @@ export function Footer() {
             <ul className="space-y-2.5 text-xs text-[#ddd] hover:underline-child">
               <li><Link href="/shop" className="hover:underline">Certified Shop Program</Link></li>
               <li><Link href="/insights" className="hover:underline">Return Prevention Insights</Link></li>
-              <li><Link href="/login" className="hover:underline">Your Account</Link></li>
+              <li><Link href="/account" className="hover:underline">Your Account</Link></li>
               <li><Link href="/help" className="hover:underline">Help & Support</Link></li>
             </ul>
           </div>

@@ -16,6 +16,16 @@ import { pickFinalPrice } from "../utils/pricing.js";
 import { generatePickupCode, makeQrDataUrl } from "../utils/qrcode.js";
 import { awardCredits } from "../services/greenCredits.js";
 
+function mapListingToOrderStatus(status: string): string {
+ switch (status) {
+ case "RESERVED": return "PENDING";
+ case "DROPPED": return "PENDING";
+ case "PAID": return "PAID";
+ case "COMPLETE": return "DELIVERED";
+ default: return "PENDING";
+ }
+}
+
 const router = Router();
 
 // Create a return: upload images, AI-grade, decide route, optionally create listing.
@@ -278,20 +288,31 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
 
  const { OrderModel } = await import("../models/Order.js");
  const order = await OrderModel.findOne({ _id: orderId, userId: req.user!.id }).lean();
- if (!order) {
+
+ // Also check if this is a listing-based purchase
+ const purchasedListing = !order
+ ? await ListingModel.findOne({ _id: orderId, buyerId: req.user!.id }).lean()
+ : null;
+
+ if (!order && !purchasedListing) {
  res.status(404).json({ error: "Order not found" });
  return;
  }
 
+ // Determine status and date based on source
+ const sourceStatus = order ? order.status : mapListingToOrderStatus(purchasedListing!.status);
+ const sourceDate = order
+ ? new Date(order.createdAt as any)
+ : new Date((purchasedListing as any).createdAt ?? (purchasedListing as any).updatedAt ?? Date.now());
+
  // Only delivered/paid orders can be returned
- if (order.status !== "DELIVERED" && order.status !== "PAID") {
- res.status(400).json({ error: `Only delivered orders can be returned. Current status: ${order.status}` });
+ if (sourceStatus !== "DELIVERED" && sourceStatus !== "PAID") {
+ res.status(400).json({ error: `Only delivered/paid orders can be returned. Current status: ${sourceStatus}` });
  return;
  }
 
  // Check within 7 days
- const orderDate = new Date(order.createdAt as any);
- const daysSinceOrder = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+ const daysSinceOrder = (Date.now() - sourceDate.getTime()) / (1000 * 60 * 60 * 24);
  if (daysSinceOrder > 7) {
  res.status(400).json({ error: "Return window expired. Returns are only allowed within 7 days." });
  return;
@@ -308,8 +329,8 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  const originalSellerId = (product as any).sellerId || null;
 
  // Get the order item to find the price paid
- const orderItem = (order.items as any[]).find((i: any) => String(i.productId) === productId);
- const pricePaid = orderItem?.price || product.originalPrice;
+ const orderItem = order ? (order.items as any[]).find((i: any) => String(i.productId) === productId) : null;
+ const pricePaid = orderItem?.price || (purchasedListing ? purchasedListing.priceFinal : product.originalPrice);
 
  // Create the return record
  const buyer = await UserModel.findById(req.user!.id).lean();
@@ -398,8 +419,12 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  }
  }
 
- // Update order status
+ // Update order/listing status
+ if (order) {
  await OrderModel.findByIdAndUpdate(orderId, { status: "CANCELLED" });
+ } else if (purchasedListing) {
+ await ListingModel.findByIdAndUpdate(orderId, { status: "COMPLETE" });
+ }
 
  res.json({
  ok: true,

@@ -102,6 +102,7 @@ router.post("/:id/pay", requireAuth, async (req, res) => {
  }
  l.status = "PAID";
  l.paymentRef = `MOCK_${Date.now()}`;
+ if (!l.buyerId) l.buyerId = req.user!.id as unknown as typeof l.buyerId;
  await l.save();
  await ReturnModel.findByIdAndUpdate(l.returnId, { status: "PAID" });
  res.json(l.toObject());

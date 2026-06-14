@@ -3,6 +3,7 @@ import { requireAuth } from "../middleware/mockAuth.js";
 import { CartModel } from "../models/Cart.js";
 import { ProductModel } from "../models/Product.js";
 import { OrderModel } from "../models/Order.js";
+import { ListingModel } from "../models/Listing.js";
 import { env } from "../config/env.js";
 import Razorpay from "razorpay";
 import crypto from "node:crypto";
@@ -183,7 +184,45 @@ router.post("/verify-payment", requireAuth, async (req, res) => {
 // Get orders
 router.get("/orders", requireAuth, async (req, res) => {
   const orders = await OrderModel.find({ userId: req.user!.id }).sort({ createdAt: -1 }).lean();
-  res.json(orders);
+
+  // Also fetch listings purchased by this buyer (marketplace purchases)
+  const listings = await ListingModel.find({
+    buyerId: req.user!.id,
+    status: { $in: ["RESERVED", "DROPPED", "PAID", "COMPLETE"] },
+  }).sort({ updatedAt: -1 }).lean();
+
+  // Convert listings to Order-like format so the frontend can display them uniformly
+  const listingOrders = listings.map((l) => ({
+    _id: String(l._id),
+    items: [{
+      productId: String(l.productId),
+      title: l.title,
+      variant: `Grade ${l.grade}`,
+      price: l.priceFinal,
+      quantity: 1,
+    }],
+    totalAmount: l.priceFinal,
+    shippingAddress: "Pickup from locker",
+    status: mapListingStatus(l.status),
+    createdAt: (l as any).createdAt ?? (l as any).updatedAt ?? new Date().toISOString(),
+    _source: "listing",
+  }));
+
+  // Merge and sort by date
+  const all = [...orders, ...listingOrders].sort(
+    (a, b) => new Date((b as any).createdAt).getTime() - new Date((a as any).createdAt).getTime()
+  );
+  res.json(all);
 });
+
+function mapListingStatus(status: string): string {
+  switch (status) {
+    case "RESERVED": return "PENDING";
+    case "DROPPED": return "PENDING";
+    case "PAID": return "PAID";
+    case "COMPLETE": return "DELIVERED";
+    default: return "PENDING";
+  }
+}
 
 export default router;

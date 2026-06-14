@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
+import { ToastProvider } from "@/lib/toast";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import  { ChatBot } from "@/components/ChatBot";
@@ -22,10 +23,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>
           <CartProvider>
-            <Nav />
-            <main className="pt-24 flex-grow">{children}</main>
-            <ChatBot />
-            <Footer />
+            <ToastProvider>
+              <Nav />
+              <main className="pt-24 flex-grow">{children}</main>
+              <ChatBot />
+              <Footer />
+            </ToastProvider>
           </CartProvider>
         </AuthProvider>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />

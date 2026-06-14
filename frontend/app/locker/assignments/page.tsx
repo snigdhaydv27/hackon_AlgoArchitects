@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useCreditToast } from "@/lib/toast";
 import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import { Package, CheckCircle2, Filter, Loader2 } from "lucide-react";
@@ -38,6 +39,7 @@ export default function LockerAssignments() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const { showCreditToast } = useCreditToast();
 
   function fetchAssignments(status: string) {
     setLoading(true);
@@ -55,7 +57,7 @@ export default function LockerAssignments() {
     setConfirmingId(listingId);
     try {
       await api(`/lockers/assignments/${listingId}/confirm-handoff`, { method: "PATCH" });
-      // Refresh list
+      showCreditToast(25, "Facilitated a hyperlocal return handoff");
       fetchAssignments(filter);
     } catch (e) {
       alert("Failed to confirm handoff: " + String(e));

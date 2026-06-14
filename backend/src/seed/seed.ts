@@ -145,6 +145,7 @@ async function seedUsers() {
  interests: ["footwear", "kids", "home"],
  profile: { footLengthMm: 250, preferredSize: "8" },
  verified: true,
+ greenCredits: 200,
  },
  {
  name: "Karthik R",
@@ -156,6 +157,7 @@ async function seedUsers() {
  location: { type: "Point", coordinates: COORDS.jayanagar },
  interests: ["baby", "electronics"],
  verified: true,
+ greenCredits: 150,
  },
  {
  name: "Meera Pillai",

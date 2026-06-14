@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useCreditToast } from "@/lib/toast";
 import { RoleGuard } from "@/components/RoleGuard";
 import { HealthCard, type HealthCardData } from "@/components/HealthCard";
 import { RazorpayButton } from "@/components/RazorpayButton";
 import { PayAtPickup } from "@/components/PayAtPickup";
-import { MapPin, CheckCircle2, Loader2, QrCode } from "lucide-react";
+import { MapPin, CheckCircle2, Loader2, QrCode, Leaf } from "lucide-react";
 
 interface ListingResp {
   listing: {
@@ -37,10 +38,12 @@ export default function Reserve() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { showCreditToast } = useCreditToast();
   const [data, setData] = useState<ListingResp | null>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paymentInfo, setPaymentInfo] = useState<{ hasRazorpay: boolean; payAtPickupAvailable: boolean } | null>(null);
+  const [creditDiscount, setCreditDiscount] = useState(0);
 
   useEffect(() => {
     if (!params.id) return;
@@ -63,6 +66,9 @@ export default function Reserve() {
       });
       const fresh = await api<ListingResp>(`/listings/${data.listing._id}`);
       setData(fresh);
+      if (verb === "pickup") {
+        showCreditToast(50, "Picked up locally — skipped the warehouse trip");
+      }
     } catch (e) {
       setError(String(e));
     } finally {
@@ -150,17 +156,30 @@ export default function Reserve() {
             />
             {(status === "RESERVED" || status === "DROPPED") && user && (
               <>
+                <CreditDiscount
+                  listingId={listing._id}
+                  amount={listing.priceFinal}
+                  onApplied={(discount) => {
+                    setCreditDiscount(discount);
+                  }}
+                />
+                {creditDiscount > 0 && (
+                  <div className="text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+                    <span>Original price: <span className="line-through text-slate-400">₹{listing.priceFinal}</span></span>
+                    <span className="font-bold text-emerald-700">Pay: ₹{(listing.priceFinal - creditDiscount).toFixed(2)}</span>
+                  </div>
+                )}
                 {paymentInfo?.hasRazorpay ? (
                   <RazorpayButton
                     listingId={listing._id}
-                    amountInr={listing.priceFinal}
+                    amountInr={Math.round((listing.priceFinal - creditDiscount) * 100) / 100}
                     buyerName={user.name}
                     onPaid={onPaid}
                   />
                 ) : (
                   <PayAtPickup
                     listingId={listing._id}
-                    amountInr={listing.priceFinal}
+                    amountInr={Math.round((listing.priceFinal - creditDiscount) * 100) / 100}
                     lockerName={listing.lockerId?.name}
                     onPaid={onPaid}
                   />
@@ -292,3 +311,70 @@ function StepIndicator({
   );
 }
 
+
+function CreditDiscount({ listingId, amount, onApplied }: { listingId: string; amount: number; onApplied: (discount: number) => void }) {
+  const [credits, setCredits] = useState<{ balance: number } | null>(null);
+  const [applied, setApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    api<{ balance: number }>("/credits/me").then(setCredits).catch(() => {});
+  }, []);
+
+  if (!credits || credits.balance <= 0) return null;
+
+  const maxDiscount = Math.min(credits.balance / 100, amount);
+
+  async function applyCredits() {
+    setLoading(true);
+    try {
+      const creditsNeeded = Math.round(maxDiscount * 100);
+      const resp = await api<{ ok: boolean; discountApplied: number; remainingCredits: number }>("/credits/redeem", {
+        method: "POST",
+        body: JSON.stringify({ creditsToUse: creditsNeeded, listingId }),
+      });
+      setDiscount(resp.discountApplied);
+      setApplied(true);
+      onApplied(resp.discountApplied);
+    } catch (e) {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (applied) {
+    return (
+      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex items-center gap-2">
+        <Leaf className="size-4 text-emerald-600" />
+        <div className="text-sm text-emerald-700">
+          <span className="font-medium">₹{discount.toFixed(2)} discount applied</span> using green credits!
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg bg-green-50 border border-green-200 p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Leaf className="size-4 text-green-600" />
+          <div>
+            <p className="text-sm font-medium text-green-800">Use Green Credits</p>
+            <p className="text-xs text-green-600">
+              You have {credits.balance} credits (₹{(credits.balance / 100).toFixed(2)} value)
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={applyCredits}
+          disabled={loading}
+          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition disabled:opacity-50 cursor-pointer"
+        >
+          {loading ? <Loader2 className="size-3 animate-spin" /> : `Apply ₹${maxDiscount.toFixed(2)} off`}
+        </button>
+      </div>
+    </div>
+  );
+}

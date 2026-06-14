@@ -26,7 +26,7 @@ export default function AccountPage() {
       description: "Edit login, name, avatar, and tagline",
       icon: <ShieldAlert className="size-8 text-[#008296] stroke-[1.5]" />,
       href: "/account/profile",
-      show: true,
+      show: user.role !== "buyer",
     },
     {
       title: "Your Addresses",

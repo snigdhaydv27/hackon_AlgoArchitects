@@ -64,10 +64,12 @@ export function Nav() {
                     {user.role} <ChevronDown className="size-3 text-[#ccc]" />
                   </span>
                 </Link>
-                <Link href="/orders" className="hidden sm:flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
-                  <span className="text-[#ccc] text-[10px]">Returns</span>
-                  <span className="font-bold text-white mt-0.5">& Orders</span>
-                </Link>
+                {user.role !== "admin" && user.role !== "locker" && (
+                  <Link href="/orders" className="hidden sm:flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
+                    <span className="text-[#ccc] text-[10px]">Returns</span>
+                    <span className="font-bold text-white mt-0.5">& Orders</span>
+                  </Link>
+                )}
               </div>
             ) : (
               <Link href="/login" className="flex flex-col px-2 py-1.5 border border-transparent hover:border-white rounded leading-none">
@@ -84,7 +86,7 @@ export function Nav() {
             )}
 
             {/* Cart Icon */}
-            {user && (user.role === "buyer" || user.role === "admin") && (
+            {user && user.role === "buyer" && (
               <Link href="/cart" className="relative flex flex-col items-center px-2 py-1 border border-transparent hover:border-white rounded">
                 <ShoppingBag className="size-5" />
                 <CartBadge />

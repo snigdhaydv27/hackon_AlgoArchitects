@@ -20,8 +20,7 @@ export default function AccountPage() {
 
   const isSeller = user.role === "seller" || user.role === "small_seller";
 
-  const cards = [
-    // Seller only sees these 3
+    const cards = [
     {
       title: "Login & security",
       description: "Edit login, name, avatar, and tagline",
@@ -34,29 +33,28 @@ export default function AccountPage() {
       description: "Edit addresses and delivery preferences",
       icon: <MapPin className="size-8 text-[#008296] stroke-[1.5]" />,
       href: "/account/addresses",
-      show: true,
+      show: user.role !== "admin",
     },
     {
       title: "Payment options",
       description: "Edit or add payment methods and Razorpay config",
       icon: <CreditCard className="size-8 text-[#008296] stroke-[1.5]" />,
       href: isSeller ? "/seller/payment-settings" : "/account/profile",
-      show: true,
+      show: user.role !== "admin",
     },
-    // Buyer-only sections
     {
       title: "Your Orders & Returns",
       description: "Track, return, or buy things again",
       icon: <Package className="size-8 text-[#008296] stroke-[1.5]" />,
-      href: "/cart/orders",
-      show: !isSeller,
+      href: "/orders",
+      show: user.role !== "admin" && user.role !== "locker" && !isSeller,
     },
     {
       title: "ReLoop Cash/Credits",
       description: "View your balance and transaction history",
       icon: <Gift className="size-8 text-[#008296] stroke-[1.5]" />,
       href: "/credits",
-      show: !isSeller,
+      show: user.role !== "admin" && !isSeller,
     },
   ].filter((c) => c.show);
 

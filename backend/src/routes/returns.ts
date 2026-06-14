@@ -287,7 +287,18 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  }
 
  const { OrderModel } = await import("../models/Order.js");
- const order = await OrderModel.findOne({ _id: orderId, userId: req.user!.id }).lean();
+
+ // Use atomic findOneAndUpdate to mark the product as returned in one step.
+ // This prevents race conditions where multiple clicks could return the same item.
+ const order = await OrderModel.findOneAndUpdate(
+ {
+ _id: orderId,
+ userId: req.user!.id,
+ returnedProductIds: { $ne: productId }, // only if NOT already returned
+ },
+ { $addToSet: { returnedProductIds: productId } },
+ { new: true }
+ ).lean();
 
  // Also check if this is a listing-based purchase
  const purchasedListing = !order
@@ -295,6 +306,12 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  : null;
 
  if (!order && !purchasedListing) {
+ // Could be that the order exists but item was already returned
+ const existingOrder = await OrderModel.findOne({ _id: orderId, userId: req.user!.id }).lean();
+ if (existingOrder && (existingOrder as any).returnedProductIds?.some((rid: any) => String(rid) === productId)) {
+ res.status(400).json({ error: "This item has already been returned." });
+ return;
+ }
  res.status(404).json({ error: "Order not found" });
  return;
  }
@@ -419,9 +436,17 @@ router.post("/buyer-return", requireAuth, async (req, res, next) => {
  }
  }
 
- // Update order/listing status
+ // Update order — if ALL items in the order have been returned, mark the order as CANCELLED
  if (order) {
+ const updatedOrder = await OrderModel.findById(orderId).lean();
+ if (updatedOrder) {
+ const allReturned = updatedOrder.items.every((item: any) =>
+ (updatedOrder.returnedProductIds as any[])?.some((rid: any) => String(rid) === String(item.productId))
+ );
+ if (allReturned) {
  await OrderModel.findByIdAndUpdate(orderId, { status: "CANCELLED" });
+ }
+ }
  } else if (purchasedListing) {
  await ListingModel.findByIdAndUpdate(orderId, { status: "COMPLETE" });
  }

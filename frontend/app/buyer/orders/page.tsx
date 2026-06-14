@@ -21,6 +21,7 @@ interface Order {
   shippingAddress: string;
   status: string;
   createdAt: string;
+  returnedProductIds?: string[];
 }
 
 interface BuyerReturn {
@@ -42,13 +43,14 @@ interface BuyerReturn {
 type Tab = "orders" | "delivered" | "returns";
 
 export default function BuyerOrdersPage() {
-  const [tab, setTab] = useState<Tab>("delivered");
+  const [tab, setTab] = useState<Tab>("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [returns, setReturns] = useState<BuyerReturn[]>([]);
   const [loading, setLoading] = useState(true);
   const [returningItem, setReturningItem] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState("");
   const [showReturnModal, setShowReturnModal] = useState<{ orderId: string; productId: string; title: string } | null>(null);
+  const [localReturnedItems, setLocalReturnedItems] = useState<Set<string>>(new Set());
   const { showError, showSuccess } = useToast();
 
   function fetchData() {
@@ -79,6 +81,8 @@ export default function BuyerOrdersPage() {
           reason: returnReason || "Buyer requested return",
         }),
       });
+      // Immediately track this item as returned locally to prevent re-clicks
+      setLocalReturnedItems(prev => new Set(prev).add(`${showReturnModal.orderId}_${showReturnModal.productId}`));
       setShowReturnModal(null);
       setReturnReason("");
       showSuccess("Return initiated successfully! Refund will be processed.");
@@ -106,8 +110,12 @@ export default function BuyerOrdersPage() {
   }
 
   // Split orders into categories
-  const myOrders = orders.filter((o) => o.status === "PENDING" || o.status === "PAID" || o.status === "SHIPPED");
-  const deliveredOrders = orders.filter((o) => o.status === "DELIVERED");
+  const myOrders = orders.filter((o) => o.status !== "CANCELLED");
+  const deliveredOrders = orders.filter((o) => o.status === "DELIVERED").filter((o) => {
+    // Hide orders where all items have been returned
+    const unreturned = o.items.filter((item) => !o.returnedProductIds?.includes(String(item.productId)));
+    return unreturned.length > 0;
+  });
   const cancelledOrders = orders.filter((o) => o.status === "CANCELLED");
 
   return (
@@ -166,7 +174,9 @@ export default function BuyerOrdersPage() {
                         <span className="text-xs font-medium text-slate-700">₹{order.totalAmount}</span>
                       </div>
                       <div className="divide-y divide-slate-100">
-                        {order.items.map((item, idx) => (
+                        {order.items
+                          .filter((item) => !order.returnedProductIds?.includes(String(item.productId)) && !localReturnedItems.has(`${order._id}_${item.productId}`))
+                          .map((item, idx) => (
                           <div key={idx} className="px-5 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
@@ -191,6 +201,22 @@ export default function BuyerOrdersPage() {
                             ) : (
                               <span className="text-xs text-slate-400 italic">Return window expired</span>
                             )}
+                          </div>
+                        ))}
+                        {/* Show returned items */}
+                        {order.items
+                          .filter((item) => order.returnedProductIds?.includes(String(item.productId)) || localReturnedItems.has(`${order._id}_${item.productId}`))
+                          .map((item, idx) => (
+                          <div key={`ret-${idx}`} className="px-5 py-4 flex items-center justify-between opacity-50">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                                <Package className="size-5 text-slate-400" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-slate-800 text-sm">{item.title}</p>
+                                <p className="text-xs text-orange-600 font-medium">✓ Returned</p>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -343,11 +369,13 @@ function OrderCard({ order }: { order: Order }) {
     PENDING: "bg-amber-100 text-amber-700",
     PAID: "bg-blue-100 text-blue-700",
     SHIPPED: "bg-purple-100 text-purple-700",
+    DELIVERED: "bg-emerald-100 text-emerald-700",
   };
   const statusLabels: Record<string, string> = {
     PENDING: "Pending Payment",
     PAID: "Confirmed",
     SHIPPED: "Shipped",
+    DELIVERED: "Delivered",
   };
 
   return (

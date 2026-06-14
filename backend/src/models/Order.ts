@@ -24,6 +24,7 @@ const OrderSchema = new Schema(
     },
     paymentRef: { type: String },
     razorpayOrderId: { type: String },
+    returnedProductIds: { type: [Schema.Types.ObjectId], default: [] },
   },
   { timestamps: true }
 );

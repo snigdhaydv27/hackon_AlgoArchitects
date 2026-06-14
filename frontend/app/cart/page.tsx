@@ -36,13 +36,22 @@ export default function CartPage() {
     try {
       const res = await api<{
         order: { _id: string; totalAmount: number; status: string };
-        razorpayOrder: { id: string; amount: number; currency: string };
-        keyId: string;
+        razorpayOrder?: { id: string; amount: number; currency: string };
+        keyId?: string;
+        demoMode?: boolean;
       }>("/cart/checkout", {
         method: "POST",
         body: JSON.stringify({ shippingAddress: address }),
       });
 
+      // Demo mode: order is instantly confirmed, no payment needed
+      if (res.demoMode) {
+        setOrderSuccess(true);
+        await refresh();
+        return;
+      }
+
+      // Production mode: use Razorpay for real payment
       // Load Razorpay SDK if not already loaded
       if (!window.Razorpay) {
         await new Promise<void>((resolve, reject) => {
@@ -57,9 +66,9 @@ export default function CartPage() {
       // Open Razorpay checkout
       const rzp = new window.Razorpay!({
         key: res.keyId,
-        amount: res.razorpayOrder.amount,
-        currency: res.razorpayOrder.currency,
-        order_id: res.razorpayOrder.id,
+        amount: res.razorpayOrder!.amount,
+        currency: res.razorpayOrder!.currency,
+        order_id: res.razorpayOrder!.id,
         name: "ReLoop",
         description: `Order — ${itemCount} item${itemCount > 1 ? "s" : ""}`,
         prefill: { name: user?.name ?? "" },
@@ -105,8 +114,8 @@ export default function CartPage() {
           </p>
           <p className="text-sm text-slate-500 mt-1">Delivering to: {address}</p>
           <div className="mt-6 flex gap-3 justify-center">
-            <button onClick={() => router.push("/shop")} className="btn-primary">Continue Shopping</button>
-            <button onClick={() => router.push("/buyer/nearby")} className="btn-secondary">Browse Nearby</button>
+            <button onClick={() => router.push("/orders")} className="btn-primary">View My Orders</button>
+            <button onClick={() => router.push("/shop")} className="btn-secondary">Continue Shopping</button>
           </div>
         </div>
       </RoleGuard>

@@ -84,7 +84,7 @@ router.put("/item/:itemId", requireAuth, async (req, res) => {
   res.json(cart);
 });
 
-// Checkout — create order + Razorpay order
+// Checkout — create order + Razorpay order (or demo mode instant confirm)
 router.post("/checkout", requireAuth, async (req, res, next) => {
   try {
     const { shippingAddress } = req.body ?? {};
@@ -122,7 +122,21 @@ router.post("/checkout", requireAuth, async (req, res, next) => {
       status: "PENDING",
     });
 
-    // Create Razorpay order — always use Razorpay for payment
+    // Demo mode: skip Razorpay, instantly mark as PAID and simulate delivery
+    if (env.isDemo || !env.razorpayKeyId || !env.razorpayKeySecret) {
+      order.status = "DELIVERED";
+      order.paymentRef = `demo_${Date.now()}`;
+      await order.save();
+      // Clear cart
+      await CartModel.findOneAndUpdate({ userId: req.user!.id }, { items: [] });
+      res.json({
+        order: order.toObject(),
+        demoMode: true,
+      });
+      return;
+    }
+
+    // Production mode: Create Razorpay order for real payment
     const razorpay = new Razorpay({
       key_id: env.razorpayKeyId,
       key_secret: env.razorpayKeySecret,
@@ -171,13 +185,29 @@ router.post("/verify-payment", requireAuth, async (req, res) => {
     return;
   }
 
-  order.status = "PAID";
+  order.status = "DELIVERED";
   order.paymentRef = razorpay_payment_id;
   await order.save();
 
   // Clear cart after successful payment
   await CartModel.findOneAndUpdate({ userId: req.user!.id }, { items: [] });
 
+  res.json({ ok: true, order: order.toObject() });
+});
+
+// Mark order as delivered (for admin or automated delivery simulation)
+router.patch("/orders/:orderId/deliver", requireAuth, async (req, res) => {
+  const order = await OrderModel.findOne({ _id: req.params.orderId, userId: req.user!.id });
+  if (!order) {
+    res.status(404).json({ error: "Order not found" });
+    return;
+  }
+  if (order.status === "DELIVERED") {
+    res.json({ ok: true, order: order.toObject() });
+    return;
+  }
+  order.status = "DELIVERED";
+  await order.save();
   res.json({ ok: true, order: order.toObject() });
 });
 
@@ -190,6 +220,12 @@ router.get("/orders", requireAuth, async (req, res) => {
     buyerId: req.user!.id,
     status: { $in: ["RESERVED", "DROPPED", "PAID", "COMPLETE"] },
   }).sort({ updatedAt: -1 }).lean();
+
+  // Normalize returnedProductIds to strings for consistent frontend comparison
+  const normalizedOrders = orders.map((o) => ({
+    ...o,
+    returnedProductIds: (o.returnedProductIds ?? []).map((id: any) => String(id)),
+  }));
 
   // Convert listings to Order-like format so the frontend can display them uniformly
   const listingOrders = listings.map((l) => ({
@@ -205,11 +241,12 @@ router.get("/orders", requireAuth, async (req, res) => {
     shippingAddress: "Pickup from locker",
     status: mapListingStatus(l.status),
     createdAt: (l as any).createdAt ?? (l as any).updatedAt ?? new Date().toISOString(),
+    returnedProductIds: [] as string[],
     _source: "listing",
   }));
 
   // Merge and sort by date
-  const all = [...orders, ...listingOrders].sort(
+  const all = [...normalizedOrders, ...listingOrders].sort(
     (a, b) => new Date((b as any).createdAt).getTime() - new Date((a as any).createdAt).getTime()
   );
   res.json(all);

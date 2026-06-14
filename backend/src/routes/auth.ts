@@ -155,11 +155,20 @@ router.post("/signin", validateBody(signinSchema), async (req, res, next) => {
     // Get Cognito user info
     const cognitoUser = await getUserFromAccessToken(tokens.accessToken);
 
-    // Find or fail in our DB
-    const user = await UserModel.findOne({ email }).lean();
+    // Find in our DB — or auto-create if Cognito auth succeeded but user isn't in Mongo yet
+    let user = await UserModel.findOne({ email }).lean();
     if (!user) {
-      res.status(404).json({ error: "Account not found in ReLoop database. Please sign up first." });
-      return;
+      const created = await UserModel.create({
+        name: cognitoUser.name || email.split("@")[0],
+        role: "seller",
+        email,
+        cognitoSub: cognitoUser.sub,
+        address: "",
+        location: { type: "Point", coordinates: [77.5946, 12.9716] },
+        verified: cognitoUser.emailVerified,
+      });
+      user = created.toObject();
+      logger.info({ email, userId: user._id }, "Auto-created user from Cognito signin");
     }
 
     // Issue our own JWT (includes role, used by all other endpoints)

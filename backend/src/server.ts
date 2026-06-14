@@ -23,6 +23,7 @@ import paymentRoutes from "./routes/payment.js";
 import notificationRoutes from "./routes/notifications.js";
 import webhookRoutes from "./routes/webhooks.js";
 import chatRoutes from "./routes/chat.js";
+import cartRoutes from "./routes/cart.js";
 import creditRoutes from "./routes/credits.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -85,6 +86,7 @@ async function main() {
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/webhooks", webhookRoutes);
   app.use("/api/chat", chatRoutes);
+  app.use("/api/cart", cartRoutes);
   app.use("/api/credits", creditRoutes);
 
   // --- Error handler (must be last) ---

@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useCart } from "@/lib/cart";
 import { RoleGuard } from "@/components/RoleGuard";
-import { AlertTriangle, Sparkles, ShieldCheck, Loader2 } from "lucide-react";
+import { AlertTriangle, Sparkles, ShieldCheck, Loader2, CheckCircle2 } from "lucide-react";
 
 interface Product {
   _id: string;
@@ -28,10 +29,12 @@ interface PreventionResp {
 export default function ProductPage() {
   const params = useParams<{ productId: string }>();
   const { user } = useAuth();
+  const { addToCart, loading: cartLoading } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [size, setSize] = useState<string>("");
   const [warning, setWarning] = useState<PreventionResp | null>(null);
   const [checking, setChecking] = useState(false);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     if (!params.productId) return;
@@ -116,7 +119,24 @@ export default function ProductPage() {
         )}
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <button className="btn-primary">Add to cart</button>
+          <button
+            onClick={async () => {
+              if (!product) return;
+              await addToCart(product._id, size);
+              setAdded(true);
+              setTimeout(() => setAdded(false), 3000);
+            }}
+            disabled={cartLoading}
+            className="btn-primary"
+          >
+            {cartLoading ? <Loader2 className="size-4 animate-spin" /> : null}
+            {added ? "✓ Added to cart" : "Add to cart"}
+          </button>
+          {added && (
+            <a href="/cart" className="flex items-center gap-1 text-sm text-brand-600 hover:underline font-medium">
+              <CheckCircle2 className="size-4" /> View cart
+            </a>
+          )}
         </div>
 
         {warning && warning.warning && (

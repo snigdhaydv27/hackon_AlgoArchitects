@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useAuth, AuthUser } from "@/lib/auth";
+import { useCart } from "@/lib/cart";
 import { api } from "@/lib/api";
 import { Recycle, LogOut, Search, MapPin, ChevronDown, User, X, Crosshair, Loader2 } from "lucide-react";
 import { BuyerInbox } from "./BuyerInbox";
@@ -92,6 +93,14 @@ export function Nav() {
               <div className="relative border border-transparent hover:border-white rounded p-1">
                 <BuyerInbox />
               </div>
+            )}
+
+            {/* Cart Icon */}
+            {user && (user.role === "buyer" || user.role === "admin") && (
+              <Link href="/cart" className="relative flex flex-col items-center px-2 py-1 border border-transparent hover:border-white rounded">
+                <ShoppingBag className="size-5" />
+                <CartBadge />
+              </Link>
             )}
           </div>
         </div>
@@ -355,6 +364,16 @@ export function Nav() {
         </>
       )}
     </>
+  );
+}
+
+function CartBadge() {
+  const { itemCount } = useCart();
+  if (itemCount === 0) return null;
+  return (
+    <span className="absolute -top-1 -right-1 bg-[#ff9900] text-[#0F1111] text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+      {itemCount}
+    </span>
   );
 }
 

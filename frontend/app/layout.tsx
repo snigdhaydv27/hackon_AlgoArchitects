@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { AuthProvider } from "@/lib/auth";
+import { CartProvider } from "@/lib/cart";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import  { ChatBot } from "@/components/ChatBot";
@@ -10,9 +11,9 @@ import  { ChatBot } from "@/components/ChatBot";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Amazon — Every return finds its next best owner",
+  title: "ReLoop — Every return finds its next best owner",
   description:
-    "AI-powered circular commerce. Grade, route, and re-home long-tail returns hyperlocally. Built for ₹200–₹800 products.",
+    "AI-powered circular commerce. Grade, route, and re-home long-tail returns hyperlocally.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,10 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>
-          <Nav />
-          <main className="pt-24 flex-grow">{children}</main>
-                 <ChatBot />
-          <Footer />
+          <CartProvider>
+            <Nav />
+            <main className="pt-24 flex-grow">{children}</main>
+            <ChatBot />
+            <Footer />
+          </CartProvider>
         </AuthProvider>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       </body>

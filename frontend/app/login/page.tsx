@@ -15,10 +15,10 @@ interface Persona {
   address?: string;
 }
 
-type Mode = "personas" | "signin" | "signup" | "confirm" | "forgot" | "reset";
+type Mode = "loading" | "personas" | "signin" | "signup" | "confirm" | "forgot" | "reset";
 
 export default function Login() {
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>("loading");
   const [list, setList] = useState<Persona[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +48,16 @@ export default function Login() {
   // If already logged in, show nothing while redirecting
   if (authLoading || user) {
     return <div className="p-8 text-slate-500">Loading...</div>;
+  }
+
+  // Still detecting mode (waiting for /auth/personas response)
+  if (mode === "loading") {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <Loader2 className="size-8 animate-spin text-slate-400 mx-auto" />
+        <p className="text-slate-500 mt-4">Loading...</p>
+      </div>
+    );
   }
 
   // --- DEMO MODE: Persona picker ---

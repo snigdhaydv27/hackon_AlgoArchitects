@@ -261,7 +261,14 @@ async function seedProducts() {
  category: "footwear",
  brand: "Sparx",
  originalPrice: 599,
- images: ["https://placehold.co/600x400/f1f5f9/334155?text=Sparx+Running+Shoes&font=roboto"],
+ images: [
+ "/static/uploads/1781449706073-9dd860915e56.png",
+ "/static/uploads/1781449706087-affcd99e4544.png",
+ "/static/uploads/1781449706131-ea5c322564f2.png",
+ "/static/uploads/1781449706139-0a4a4303c6cf.png",
+ "/static/uploads/1781449706148-6a2e3c9c0933.png",
+ "/static/uploads/1781449706153-a20348c095f4.png",
+ ],
  description: "Lightweight running shoes with breathable mesh upper",
  variants: { sizes: ["6", "7", "8", "9", "10"], colors: ["black", "blue"] },
  weightGrams: 700,
@@ -271,7 +278,14 @@ async function seedProducts() {
  category: "baby",
  brand: "Philips",
  originalPrice: 4500,
- images: ["https://placehold.co/600x400/f1f5f9/334155?text=Philips+Baby+Monitor&font=roboto"],
+ images: [
+ "/static/uploads/1781449933958-763519635a8c.png",
+ "/static/uploads/1781449934032-0d795c21d936.png",
+ "/static/uploads/1781449934036-ee5fd3471297.png",
+ "/static/uploads/1781449934045-823fb6a691f2.png",
+ "/static/uploads/1781449934059-1d170ab69cd6.png",
+ "/static/uploads/1781449934064-0cd32066e765.png",
+ ],
  description: "Audio baby monitor with nightlight",
  variants: { sizes: [], colors: ["white"] },
  weightGrams: 600,
@@ -281,7 +295,14 @@ async function seedProducts() {
  category: "apparel",
  brand: "FabIndia",
  originalPrice: 799,
- images: ["https://placehold.co/600x400/f1f5f9/334155?text=Cotton+Kurta+Set&font=roboto"],
+ images: [
+ "/static/uploads/1781450358965-1f0a0ade39dd.png",
+ "/static/uploads/1781450358979-cf3f737fcebf.png",
+ "/static/uploads/1781450358992-7f92ce5c5ca0.png",
+ "/static/uploads/1781450359002-ea68e6c99209.png",
+ "/static/uploads/1781450359024-6ec5b2eb90fb.png",
+ "/static/uploads/1781450359043-81e237843082.png",
+ ],
  description: "Hand-block printed cotton kurta",
  variants: { sizes: ["S", "M", "L", "XL"], colors: ["indigo", "ivory"] },
  weightGrams: 400,
@@ -291,7 +312,14 @@ async function seedProducts() {
  category: "home",
  brand: "Milton",
  originalPrice: 449,
- images: ["https://placehold.co/600x400/f1f5f9/334155?text=Milton+Water+Bottle&font=roboto"],
+ images: [
+ "/static/uploads/1781450463820-8d9db2ee312d.png",
+ "/static/uploads/1781450463825-8032e300782f.png",
+ "/static/uploads/1781450463828-e45c5cd0ac7a.png",
+ "/static/uploads/1781450463829-39de177ee973.png",
+ "/static/uploads/1781450463831-6d378a8dcd8f.png",
+ "/static/uploads/1781450463833-c40aea89def2.png",
+ ],
  description: "1L insulated stainless steel bottle",
  variants: { sizes: [], colors: ["silver", "blue", "black"] },
  weightGrams: 350,
@@ -301,7 +329,14 @@ async function seedProducts() {
  category: "footwear",
  brand: "Liberty",
  originalPrice: 549,
- images: ["https://placehold.co/600x400/f1f5f9/334155?text=Kids+Trekking+Sandals&font=roboto"],
+ images: [
+ "/static/uploads/1781450682761-3d6e388813d1.png",
+ "/static/uploads/1781450682768-358466663f2f.png",
+ "/static/uploads/1781450682770-bc7597a30978.png",
+ "/static/uploads/1781450682778-9354c61077e1.png",
+ "/static/uploads/1781450682780-4a3283584401.png",
+ "/static/uploads/1781450682782-998159711798.png",
+ ],
  description: "Sturdy outdoor sandals for kids",
  variants: { sizes: ["1", "2", "3", "4", "5"], colors: ["brown", "black"] },
  weightGrams: 450,
@@ -311,7 +346,14 @@ async function seedProducts() {
  category: "electronics",
  brand: "Boat",
  originalPrice: 799,
- images: ["https://placehold.co/600x400/f1f5f9/334155?text=Boat+Bluetooth+Earbuds&font=roboto"],
+ images: [
+ "/static/uploads/1781450735529-be3821d3f6a0.png",
+ "/static/uploads/1781450735535-132eb0d8f2f4.png",
+ "/static/uploads/1781450735537-5d669ea990dd.png",
+ "/static/uploads/1781450735538-51eedd069460.png",
+ "/static/uploads/1781450735545-16db89493264.png",
+ "/static/uploads/1781450735547-4562af9f7a17.png",
+ ],
  description: "Wireless earbuds with charging case",
  variants: { sizes: [], colors: ["black", "white"] },
  weightGrams: 80,
@@ -597,6 +639,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 420,
    summary: "Like-new running shoes. Worn once indoors, sole immaculate.",
    defects: [],
+   images: ["/static/uploads/1781450769661-a3e56b4d82ea.png", "/static/uploads/1781450769671-a331179c2b4f.png", "/static/uploads/1781450769673-1f530418f765.png", "/static/uploads/1781450769678-218ecbe8cf71.png", "/static/uploads/1781450769683-0ed900f2265d.png", "/static/uploads/1781450769691-b5d424f22a61.png"],
   },
   // Footwear — Grade B (Kids sandals)
   {
@@ -607,6 +650,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 349,
    summary: "Lightly used kids sandals. Minor scuff on toe. Perfect for outdoor play.",
    defects: ["Small scuff on toe cap"],
+   images: ["/static/uploads/1781455790453-7199877b4c3c.png", "/static/uploads/1781455790501-5f6195c01470.png", "/static/uploads/1781455790502-3b45f39e824f.png", "/static/uploads/1781455790506-59af06ac2dbf.png", "/static/uploads/1781455790509-43b6a9afa4ec.png", "/static/uploads/1781455790510-2fd3fa5031cd.png"],
   },
   // Baby — Grade A (appeals to Karthik, Divya)
   {
@@ -617,6 +661,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 3200,
    summary: "Unused baby monitor, original packaging. Gift duplicate — never powered on.",
    defects: [],
+   images: ["/static/uploads/1781456020372-1816a29418ac.png", "/static/uploads/1781456020380-5b9f372e5d31.png", "/static/uploads/1781456020380-83cb9c6fee1c.png", "/static/uploads/1781456020380-d1e5dbd6e276.png", "/static/uploads/1781456020381-13aa199c3dbb.png", "/static/uploads/1781456020382-10d90af6a4be.png"],
   },
   // Apparel — Grade B (appeals to Meera, Pooja, Aditya)
   {
@@ -627,6 +672,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 499,
    summary: "Beautiful hand-block print kurta. Worn twice, washed once. Like new.",
    defects: ["Faint fold crease from storage"],
+   images: ["/static/uploads/1781456059862-1b3b7f4dd4d7.png", "/static/uploads/1781456059871-f2bc22902889.png", "/static/uploads/1781456059872-2467a6b6aada.png", "/static/uploads/1781456059872-ed4aa2aaf973.png", "/static/uploads/1781456059873-8e9886a976ff.png", "/static/uploads/1781456059875-da370752a07b.jpg"],
   },
   // Home — Grade A (appeals to Neha, Arjun, Ravi, Aditya)
   {
@@ -637,6 +683,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 320,
    summary: "Brand new Milton bottle. Unused — got two as gifts.",
    defects: [],
+   images: ["/static/uploads/1781456074748-b1c4bee70da0.png", "/static/uploads/1781456074752-2954e946e0d7.jpg", "/static/uploads/1781456074752-48a205953e69.png", "/static/uploads/1781456074752-748895c12c35.png", "/static/uploads/1781456074752-f517c8a7f190.png", "/static/uploads/1781456074753-d90e5db79bd6.png"],
   },
   // Electronics — Grade B (appeals to Arjun, Ravi, Karthik)
   {
@@ -647,6 +694,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 520,
    summary: "Boat earbuds in great condition. Charging case has minor scratch. Sound perfect.",
    defects: ["Light scratch on charging case lid"],
+   images: ["/static/uploads/1781456089571-af039fe7c37d.png", "/static/uploads/1781456089575-03ae016f37c7.png", "/static/uploads/1781456089575-b13f77494076.jpg", "/static/uploads/1781456089575-c91ba6ede76a.png", "/static/uploads/1781456089576-775137488f93.png", "/static/uploads/1781456089576-c818de38db56.png"],
   },
   // Apparel — Grade A (appeals to Meera, Pooja)
   {
@@ -657,6 +705,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 580,
    summary: "Unworn kurta with tags intact. Ordered wrong size, never returned in time.",
    defects: [],
+   images: ["/static/uploads/1781456120376-ada0b8304ca2.png", "/static/uploads/1781456120379-ce9571fcbaa2.jpg", "/static/uploads/1781456120379-f76c5c0488ef.png", "/static/uploads/1781456120380-4ff15e5cfdbe.png", "/static/uploads/1781456120380-52804626d4c4.png", "/static/uploads/1781456120380-ac758af79db9.png"],
   },
   // Electronics — Grade A (appeals to Arjun, Ravi)
   {
@@ -667,6 +716,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 599,
    summary: "Sealed Boat Airdopes. Opened box to check contents, never used.",
    defects: [],
+   images: ["/static/uploads/1781456135832-85047eb0d63a.png", "/static/uploads/1781456135836-f3e5a73a0900.png", "/static/uploads/1781456135837-41eeebaaf000.png", "/static/uploads/1781456135837-8d690600cd22.png", "/static/uploads/1781456135837-e340976f0d9e.jpg", "/static/uploads/1781456135838-26ba2c136c54.png"],
   },
   // Footwear — Grade B (appeals to Neha, Meera, Aditya)
   {
@@ -677,6 +727,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 380,
    summary: "Good condition Sparx shoes. Used for 2 weeks. Clean sole, slight crease on toe.",
    defects: ["Slight crease on toe box", "Minor sole wear"],
+   images: ["/static/uploads/1781456160050-4ee17796501c.png", "/static/uploads/1781456160058-b1c26a671a95.png", "/static/uploads/1781456160058-cba81c77eda0.png", "/static/uploads/1781456160058-fef7d61061f6.png", "/static/uploads/1781456160059-fa2b924155b8.png", "/static/uploads/1781456160060-7841b766f2d0.png"],
   },
   // Home — Grade B (appeals to Neha, Arjun, Aditya)
   {
@@ -687,6 +738,7 @@ async function seedDemoActivity(opts: {
    priceFinal: 280,
    summary: "Used water bottle, minor dent near base. Insulation works perfectly.",
    defects: ["Small dent on base"],
+   images: ["/static/uploads/1781456221721-6e1b60765890.png", "/static/uploads/1781456221734-b84cd64efa4a.png", "/static/uploads/1781456221735-f7aed0bbbd1b.png", "/static/uploads/1781456221736-0fca41fdccf3.png", "/static/uploads/1781456221737-64cd58f398a5.png", "/static/uploads/1781456221738-0013df413640.png"],
   },
  ];
 
@@ -694,11 +746,12 @@ async function seedDemoActivity(opts: {
   const code = generatePickupCode();
   const qr = await makeQrDataUrl(JSON.stringify({ code, listingDemo: true }));
   const lockerCoords = item.locker.location.coordinates as [number, number];
+  const listingImages = item.images || item.product.images || ["/products/placeholder.jpg"];
 
   const ret = await ReturnModel.create({
    productId: item.product._id,
    sellerId: item.seller._id,
-   images: item.product.images || ["/products/placeholder.jpg"],
+   images: listingImages,
    aiGrade: item.grade,
    aiSummary: item.summary,
    defects: item.defects,
@@ -722,7 +775,7 @@ async function seedDemoActivity(opts: {
    priceFinal: item.priceFinal,
    title: item.product.title,
    grade: item.grade,
-   images: item.product.images || ["/products/placeholder.jpg"],
+   images: listingImages,
    summary: item.summary,
    defects: item.defects,
    location: { type: "Point", coordinates: lockerCoords },

@@ -63,12 +63,7 @@ export function Footer() {
             <Recycle className="size-5 text-[#ff9900]" />
             <span className="text-sm">ReLoop</span>
           </Link>
-          <div className="border border-slate-500 rounded px-3 py-1 bg-[#232f3e] text-slate-300 flex items-center gap-1.5 cursor-pointer hover:border-slate-300">
-            <span>🌐</span> English
-          </div>
-          <div className="border border-slate-500 rounded px-3 py-1 bg-[#232f3e] text-slate-300 flex items-center gap-1.5 cursor-pointer hover:border-slate-300">
-            <span>🇮🇳</span> India
-          </div>
+
         </div>
       </div>
 

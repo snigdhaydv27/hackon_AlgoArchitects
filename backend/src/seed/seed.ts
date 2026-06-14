@@ -110,6 +110,7 @@ async function seedUsers() {
  interests: ["footwear"],
  profile: { footLengthMm: 235, preferredSize: "7", brand: "Sparx" },
  verified: true,
+ greenCredits: 90,
  },
  {
  name: "Rahul Mehta",
@@ -132,6 +133,7 @@ async function seedUsers() {
  location: { type: "Point", coordinates: COORDS.indiranagar },
  interests: ["apparel", "footwear", "home"],
  verified: true,
+ greenCredits: 120,
  },
  // Verified buyers — 8 of them spread across the city
  {

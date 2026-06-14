@@ -127,6 +127,11 @@ router.post("/:id/pickup", requireAuth, async (req, res) => {
  await awardCredits(l.buyerId, "LOCAL_PICKUP", { listingId: l._id, returnId: l.returnId });
  }
 
+ // Reward the seller — item successfully resold (non-blocking).
+ if (l.sellerId) {
+ await awardCredits(l.sellerId, "RETURN_DIVERTED", { listingId: l._id, returnId: l.returnId });
+ }
+
  res.json(l.toObject());
 });
 

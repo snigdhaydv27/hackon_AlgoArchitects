@@ -167,12 +167,7 @@ router.post("/", requireAuth, upload.array("images", 10), async (req, res, next)
  ret.sellerRefundIssued = true;
  await ret.save();
 
- // Reward the seller for keeping the item out of landfill (non-blocking).
- if (decision.route === "DONATE") {
- await awardCredits(seller._id, "DONATION", { returnId: ret._id });
- } else if (decision.route !== "RECYCLE") {
- await awardCredits(seller._id, "RETURN_DIVERTED", { returnId: ret._id });
- }
+ // Credits are awarded to seller when the item is successfully resold (buyer picks up).
 
  res.json({
  return: ret.toObject(),

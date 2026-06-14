@@ -18,6 +18,20 @@ export function Nav() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Location picker state
   const [locationOpen, setLocationOpen] = useState(false);
+  // Live credit balance for buyers
+  const [liveCredits, setLiveCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    function fetchCredits() {
+      api<{ balance: number }>("/credits/me").then((r) => setLiveCredits(r.balance)).catch(() => {});
+    }
+    fetchCredits();
+    const interval = setInterval(fetchCredits, 10000);
+    const onFocus = () => fetchCredits();
+    window.addEventListener("focus", onFocus);
+    return () => { clearInterval(interval); window.removeEventListener("focus", onFocus); };
+  }, [user]);
 
   return (
     <>
@@ -79,11 +93,11 @@ export function Nav() {
               </div>
             )}
 
-            {/* Green Credits for buyers */}
-            {user && user.role === "buyer" && (
+            {/* Green Credits */}
+            {user && user.role !== "admin" && (
               <Link href="/credits" className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 border border-transparent hover:border-white rounded">
                 <Leaf className="size-4 text-emerald-400" />
-                <span className="text-xs font-bold text-emerald-400">{user.greenCredits ?? 0}</span>
+                <span className="text-xs font-bold text-emerald-400">{liveCredits ?? user.greenCredits ?? 0}</span>
               </Link>
             )}
 

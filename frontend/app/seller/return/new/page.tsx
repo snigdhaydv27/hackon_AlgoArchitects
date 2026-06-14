@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { useCreditToast } from "@/lib/toast";
 import { RoleGuard } from "@/components/RoleGuard";
 import { GradeBadge } from "@/components/GradeBadge";
 import { HealthCard, type HealthCardData } from "@/components/HealthCard";
@@ -68,7 +67,6 @@ export default function NewReturn() {
   const [result, setResult] = useState<GradeResp | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const { showCreditToast } = useCreditToast();
 
   useEffect(() => {
     api<Product[]>("/products/for-seller").then((p) => {
@@ -108,12 +106,6 @@ export default function NewReturn() {
       files.forEach((f) => fd.append("images", f));
       const r = await api<GradeResp>("/returns", { method: "POST", body: fd });
       setResult(r);
-      // Show credit toast
-      if (r.decision.route === "DONATE") {
-        showCreditToast(40, "Donated to an NGO instead of discarding");
-      } else if (r.decision.route !== "RECYCLE") {
-        showCreditToast(30, "Gave a return a second life instead of landfill");
-      }
     } catch (e) {
       setError(String(e));
     } finally {

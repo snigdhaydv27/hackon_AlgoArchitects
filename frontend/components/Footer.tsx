@@ -24,10 +24,9 @@ export function Footer() {
           <div>
             <h4 className="text-white font-bold text-sm mb-4">Get to Know Us</h4>
             <ul className="space-y-2.5 text-xs text-[#ddd] hover:underline-child">
-              <li><Link href="/" className="hover:underline">About ReLoop</Link></li>
-              <li><Link href="/" className="hover:underline">Sustainability Impact</Link></li>
-              <li><Link href="/" className="hover:underline">Green Technologies</Link></li>
-              <li><Link href="/" className="hover:underline">ReLoop Devices</Link></li>
+              <li><Link href="/about" className="hover:underline">About ReLoop</Link></li>
+              <li><Link href="/sustainability" className="hover:underline">Sustainability Impact</Link></li>
+              <li><Link href="/hyperlocal" className="hover:underline">HyperLocal Network</Link></li>
             </ul>
           </div>
           <div>
@@ -36,16 +35,15 @@ export function Footer() {
               <li><Link href="https://www.facebook.com/AmazonIN" className="hover:underline">Facebook</Link></li>
               <li><Link href="https://x.com/AmazonIN" className="hover:underline">Twitter / X</Link></li>
               <li><Link href="https://www.instagram.com/amazondotin" className="hover:underline">Instagram</Link></li>
-              <li><Link href="/" className="hover:underline">Circular Commerce Blog</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-white font-bold text-sm mb-4">Make Money with Us</h4>
-            <ul className="space-y-2.5 text-xs text-[#ddd]">
+            <ul className="space-y-2.5 text-xs text-[#ddd] hover:underline-child">
               <li><Link href="/seller/return/new" className="hover:underline">Sell Refurbished Items</Link></li>
-              <li><Link href="/" className="hover:underline">Become a Locker Partner</Link></li>
-              <li><Link href="/" className="hover:underline">Advertise Your Products</Link></li>
-              <li><Link href="/" className="hover:underline">ReLoop Cash/Credits program</Link></li>
+              <li><Link href="/locker-partner" className="hover:underline">Become a Locker Partner</Link></li>
+              <li><Link href="/advertise" className="hover:underline">Advertise Your Products</Link></li>
+              <li><Link href="/credits" className="hover:underline">ReLoop Cash/Credits program</Link></li>
             </ul>
           </div>
           <div>

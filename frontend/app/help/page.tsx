@@ -15,6 +15,40 @@ type HelpTopic = {
 };
 
 const HELP_CONTENT: Record<string, HelpTopic> = {
+  "privacy-notice": {
+    id: "privacy-notice",
+    title: "Privacy Notice",
+    breadcrumb: "Legal & Privacy",
+    content: (
+      <>
+        <p className="text-[13px] mb-6 text-[#0F1111]">
+          We know that you care how information about you is used and shared, and we appreciate your trust that we will do so carefully and sensibly. This Privacy Notice describes how ReLoop and its affiliates collect and process your personal information through ReLoop websites, devices, products, services, and applications that reference this Privacy Notice.
+        </p>
+        <div className="border-b border-[#D5D9D9] w-full mb-6"></div>
+        <div className="space-y-6 text-[13px] text-[#0F1111] leading-relaxed">
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">What Personal Information About Customers Does ReLoop Collect?</h3>
+            <ul className="list-disc pl-5 space-y-2 mb-4">
+              <li><strong>Information You Give Us:</strong> We receive and store any information you provide in relation to ReLoop Services. You can choose not to provide certain information, but then you might not be able to take advantage of many of our ReLoop Services.</li>
+              <li><strong>Automatic Information:</strong> We automatically collect and store certain types of information about your use of ReLoop Services, including information about your interaction with content and services available through ReLoop Services.</li>
+              <li><strong>Location Data:</strong> To enable our Hyperlocal Locker Network and zero-shipping returns, we collect your location coordinates. This allows our Smart Routing algorithm to connect you with nearby Kirana lockers and neighbors.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">For What Purposes Does ReLoop Use Your Personal Information?</h3>
+            <p className="mb-2">
+              We use your personal information to operate, provide, develop, and improve the products and services that we offer our customers. These purposes include:
+            </p>
+            <ul className="list-disc pl-5 space-y-2 mb-4">
+              <li><strong>Purchase and delivery of products and services:</strong> We use your personal information to take and handle orders, deliver products and services, process payments, and communicate with you about orders, products and services, and promotional offers.</li>
+              <li><strong>AI Grading and Image Analysis:</strong> Images and videos uploaded during the return or selling process are analyzed by our proprietary Vision AI to assign a grade. These images are temporarily stored to improve our machine learning models.</li>
+              <li><strong>Recommendations and personalization:</strong> We use your personal information to recommend features, products, and services that might be of interest to you, identify your preferences, and personalize your experience with ReLoop.</li>
+            </ul>
+          </section>
+        </div>
+      </>
+    )
+  },
   "conditions-of-use": {
     id: "conditions-of-use",
     title: "Conditions of Use",

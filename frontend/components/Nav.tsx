@@ -346,24 +346,28 @@ export function Nav() {
                       🔒 Login & Security
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      href="/account/addresses"
-                      onClick={() => setSidebarOpen(false)}
-                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                    >
-                      📍 Your Addresses
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href={user?.role === "seller" || user?.role === "small_seller" ? "/seller/payment-settings" : "/account/profile"}
-                      onClick={() => setSidebarOpen(false)}
-                      className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
-                    >
-                      💳 Payment Options
-                    </Link>
-                  </li>
+                  {user?.role !== "locker" && (
+                    <>
+                      <li>
+                        <Link
+                          href="/account/addresses"
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          📍 Your Addresses
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href={user?.role === "seller" || user?.role === "small_seller" ? "/seller/payment-settings" : "/account/profile"}
+                          onClick={() => setSidebarOpen(false)}
+                          className="hover:text-slate-900 flex items-center gap-2 hover:bg-slate-50 p-1 rounded"
+                        >
+                          💳 Payment Options
+                        </Link>
+                      </li>
+                    </>
+                  )}
                   {user?.role === "buyer" && (
                     <>
                       <li>

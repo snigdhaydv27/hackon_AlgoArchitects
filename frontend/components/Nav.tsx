@@ -560,8 +560,8 @@ function navLinks(role?: string) {
     ];
   }
   return [
-    { href: "/seller/return/new", label: "New Return", icon: Package },
-    { href: "/seller/dashboard", label: "My Returns", icon: BarChart3 },
+    { href: "/seller/dashboard", label: "Dashboard", icon: BarChart3 },
+    { href: "/seller/return/new", label: "Sell Now", icon: Package },
     { href: "/seller/resells", label: "Resells", icon: RotateCcw },
   ];
 }

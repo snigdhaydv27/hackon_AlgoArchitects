@@ -75,7 +75,7 @@ export function Footer() {
       {/* Bottom Legal / Copyright Bar */}
       <div className="bg-[#131921] py-8 px-4 text-center text-xxs text-slate-400 space-y-4">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-          <Link href="/" className="hover:underline">Conditions of Use</Link>
+          <Link href="/help?topic=conditions-of-use" className="hover:underline">Conditions of Use</Link>
           <Link href="/" className="hover:underline">Privacy Notice</Link>
           <Link href="/" className="hover:underline">Interest-Based Ads</Link>
           <span className="text-slate-600">|</span>

@@ -15,6 +15,45 @@ type HelpTopic = {
 };
 
 const HELP_CONTENT: Record<string, HelpTopic> = {
+  "conditions-of-use": {
+    id: "conditions-of-use",
+    title: "Conditions of Use",
+    breadcrumb: "Legal & Privacy",
+    content: (
+      <>
+        <p className="text-[13px] mb-6 text-[#0F1111]">
+          Welcome to ReLoop. ReLoop.inc and/or its affiliates ("ReLoop") provide website features and other products and services to you when you visit or shop at ReLoop.in, use ReLoop products or services, use ReLoop applications for mobile, or use software provided by ReLoop in connection with any of the foregoing (collectively, "ReLoop Services"). ReLoop provides the ReLoop Services subject to the following conditions.
+        </p>
+        <div className="border-b border-[#D5D9D9] w-full mb-6"></div>
+        <div className="space-y-6 text-[13px] text-[#0F1111] leading-relaxed">
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">By using ReLoop Services, you agree to these conditions. Please read them carefully.</h3>
+            <p className="mb-2">
+              We offer a wide range of ReLoop Services, and sometimes additional terms may apply. When you use an ReLoop Service (for example, Your Profile, ReLoop Green Credits, or Hyperlocal Locker Network) you also will be subject to the guidelines, terms and agreements applicable to that ReLoop Service ("Service Terms").
+            </p>
+          </section>
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">Privacy</h3>
+            <p className="mb-2">
+              Please review our Privacy Notice, which also governs your use of ReLoop Services, to understand our practices.
+            </p>
+          </section>
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">Electronic Communications</h3>
+            <p className="mb-2">
+              When you use ReLoop Services, or send e-mails, text messages, and other communications from your desktop or mobile device to us, you may be communicating with us electronically. You consent to receive communications from us electronically, such as e-mails, texts, mobile push notices, or notices and messages on this site or through the other ReLoop Services.
+            </p>
+          </section>
+          <section>
+            <h3 className="text-[18px] font-bold mb-2">AI Grading and Final Pricing</h3>
+            <p className="mb-2">
+              ReLoop uses proprietary Vision AI to grade products and assign fixed price bands. By listing or purchasing an item, you agree to accept the AI-generated condition report and the final pricing band as conclusive for the transaction, subject to our dispute resolution policies.
+            </p>
+          </section>
+        </div>
+      </>
+    )
+  },
   "purchase-protection": {
     id: "purchase-protection",
     title: "100% Purchase Protection",
@@ -337,6 +376,15 @@ export default function HelpPage() {
 
   const [feedbackState, setFeedbackState] = useState<"idle" | "yes" | "no" | "submitted">("idle");
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Read from URL query param if available
+    const searchParams = new URLSearchParams(window.location.search);
+    const topicParam = searchParams.get("topic");
+    if (topicParam && HELP_CONTENT[topicParam]) {
+      setActiveTopicId(topicParam);
+    }
+  }, []);
 
   useEffect(() => {
     setFeedbackState("idle");

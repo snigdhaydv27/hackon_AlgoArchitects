@@ -34,16 +34,27 @@ export class GeminiGrader implements GradingProvider {
         contents: [{ role: "user", parts }],
         config: {
           systemInstruction: GRADER_SYSTEM,
-          maxOutputTokens: 600,
+          maxOutputTokens: 1024,
           temperature: 0.2,
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
         },
       });
 
       const text = response.text ?? "";
+      console.log(`[ai] raw gemini text (${text.length} chars):`, JSON.stringify(text).slice(0, 800));
+      if (!text) {
+        const cand = (response as any)?.candidates?.[0];
+        console.warn(
+          `[ai] empty gemini text. finishReason=${cand?.finishReason} promptFeedback=${JSON.stringify(
+            (response as any)?.promptFeedback
+          )}`
+        );
+      }
       const parsed = parseGradingJson(text, ctx);
       return { ...parsed, latencyMs: Date.now() - start, provider: "gemini" };
     } catch (err: any) {
-      console.warn(`[ai] Gemini grading failed (${err.message?.slice(0, 80)}), using fallback mock grader`);
+      console.warn(`[ai] Gemini grading threw, using fallback mock grader. Full error:`, err);
       const result = await this.fallback.grade(images, ctx);
       return { ...result, provider: "gemini" }; // label as gemini so UI doesn't break
     }

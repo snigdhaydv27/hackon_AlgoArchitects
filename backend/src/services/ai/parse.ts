@@ -22,12 +22,13 @@ export function parseGradingJson(raw: string, ctx: GradingContext) {
  const start = cleaned.indexOf("{");
  const end = cleaned.lastIndexOf("}");
  const slice = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
- let obj: unknown;
- try {
- obj = JSON.parse(slice);
- } catch {
- // Fallback: degrade gracefully.
- return {
+  let obj: unknown;
+  try {
+    obj = JSON.parse(slice);
+  } catch (e) {
+    // Fallback: degrade gracefully.
+    console.warn(`[ai] JSON.parse failed. slice="${slice.slice(0, 300)}"`);
+    return {
  grade: "C" as const,
  defects: ["Could not parse AI response"],
  summary: "Image needs manual review",

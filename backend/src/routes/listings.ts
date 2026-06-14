@@ -51,7 +51,7 @@ router.get("/:id", async (req, res) => {
  suggestedPriceMax: l.priceFinal,
  confidence: 0.9,
  latencyMs: 0,
- provider: "anthropic",
+ provider: "gemini",
  };
  const card = buildHealthCard({
  grading,

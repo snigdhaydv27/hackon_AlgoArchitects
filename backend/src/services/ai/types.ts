@@ -18,10 +18,10 @@ export interface GradingResult {
  suggestedPriceMax: number;
  confidence: number;
  latencyMs: number;
- provider: "anthropic" | "bedrock" | "mock";
+ provider: "gemini" | "mock";
 }
 
 export interface GradingProvider {
- name: "anthropic" | "bedrock" | "mock";
+ name: "gemini" | "mock";
  grade(images: ImageInput[], ctx: GradingContext): Promise<GradingResult>;
 }

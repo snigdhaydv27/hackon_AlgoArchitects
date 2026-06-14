@@ -26,12 +26,7 @@ export const env = {
   jwtExpiresIn: (process.env.JWT_EXPIRES_IN ?? "7d") as string | number,
 
   // --- AI ---
-  aiProvider: (process.env.AI_PROVIDER ?? "mock") as "anthropic" | "bedrock" | "nova" | "mock",
-  anthropicKey: process.env.ANTHROPIC_API_KEY ?? "",
-  anthropicModel: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5-20250929",
-  bedrockRegion: process.env.BEDROCK_REGION ?? process.env.AWS_REGION ?? "us-east-1",
-  bedrockModelId: process.env.BEDROCK_MODEL_ID ?? "anthropic.claude-sonnet-4-20250514-v1:0",
-  novaModelId: process.env.NOVA_MODEL_ID ?? "us.amazon.nova-lite-v1:0",
+  aiProvider: (process.env.AI_PROVIDER ?? "gemini") as "gemini" | "mock",
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
 
   // --- Storage ---
